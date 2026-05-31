@@ -179,7 +179,7 @@ void Config::init() {
 #    if !defined(SD_SPIPINS)
     SDSPI.begin();
 #    else
-    SDSPI.begin(SD_SPIPINS); // SCK, MISO, MOSI
+    SDSPI.begin(SD_SPIPINS); // SCK, MISO, MOSI, CS
 #    endif
 #endif
     eepromRead(EEPROM_START, store);

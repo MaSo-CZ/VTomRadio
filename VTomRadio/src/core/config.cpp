@@ -281,7 +281,6 @@ void Config::_setupVersion() {
 }
 
 void Config::changeMode(int newmode) { // DLNA mod
-    // Serial.printf("Config.cpp-->changeMode() newmode: %d", newmode);
 #ifdef USE_SD
     // Encoder dupla klikk (paraméter nélküli hívás)
     if (newmode == -1) {

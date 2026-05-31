@@ -912,7 +912,6 @@ size_t NetServer::chunkedHtmlPageCallback(uint8_t *buffer, size_t maxLen, size_t
 #endif
   size_t canread = (needread > maxLen) ? maxLen : needread;
   DBGVB("[%s] seek to %d in %s and read %d bytes with maxLen=%d", __func__, index, netserver.chunkedPathBuffer, canread, maxLen);
-  //netserver.loop();
   requiredfile.seek(index, SeekSet);
   requiredfile.read(buffer, canread);
   index += canread;

@@ -270,7 +270,6 @@ void VuWidget::_draw() {
         if (pxR_w > 0) { _spr->fillRect(pxR_shadow, 0, pxR_w, _vuConf.height, peak_bright); }
         _spr->fillRect(pxR, 0, peak_width, _vuConf.height, peak_color);
     }
-
         _spr->pushSprite(_vuConf.left, _vuConf.top);
 #endif
     } else {

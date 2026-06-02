@@ -407,7 +407,6 @@ void ClockWidget::_printClock(bool redraw) {
 
     sprintf(_tmp, "%02d", currentSecond);
     const uint16_t secW = _spr->textWidth(_tmp);
-    Serial.printf("secW=%d\n", secW);
     uint16_t secH = _spr->fontHeight();
 
     uint16_t leftSec;

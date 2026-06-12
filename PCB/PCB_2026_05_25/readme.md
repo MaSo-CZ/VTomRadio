@@ -24,9 +24,9 @@
 | R5 - R6           | 1k    | SMD 1206 |
 | R7 - R13          | 10k   | SMD 1206 |
 | R14 - R15         | 4,7k  | SMD 1206 |
-| R16               | 330   | SMD 1206 |
-| R17               | 47k   | SMD 1206 |
-| R18               | 680   | SMD 1206 |
+| R16               | 330   | SMD 0805 |
+| R17               | 47k   | SMD 0805 |
+| R18               | 680   | SMD 0805 |
 | R19               | 47k   | SMD 1206 |
 | C1                | 220uF/10V | |
 | C2                | Kondenzátor 100nF 100V 10% Polipropilén RM-5

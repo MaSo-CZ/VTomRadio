@@ -112,7 +112,11 @@ A névnapok megjelenítése a WEB-es felületen kikapcsolható options/ SYSTEM->
 
 ## Version history: 
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     
-https://buymeacoffee.com/vtom
+### https://buymeacoffee.com/vtom
+## v0.1.6   
+- A POWER LED bekapcsolás idejének változtatása.      
+    [A PCB verzio:206.05.25 együttműködéséhez.](PCB/PCB_2026_05_25/readme.md)
+
 ## v0.1.5
 - ILI9341 kijelző támogatás hozzáadása. Ez a kijelző 320x240 felbontású, így a megjelenítés kissé módosult, de a program többi része változatlan maradt. (by Scott Barber)
 ### v0.1.4

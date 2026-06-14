@@ -58,12 +58,12 @@ Supported languages: HU, PL, NL, GR, DE (UA Local/namedays/namedays_UA.h is not 
 // #define TS_CS    3
 
 /*----- Touch I2C -----*/
-//#define TS_MODEL TS_MODEL_FT6X36
+ #define TS_MODEL TS_MODEL_FT6X36
 // #define TS_MODEL TS_MODEL_AXS15231B
-// #define TS_SCL     7
-// #define TS_SDA     8
-// #define TS_INT    17 
- //#define TS_RST     1
+ #define TS_SCL     7
+ #define TS_SDA     8
+ #define TS_INT    17 
+ #define TS_RST     1
 
 /*----- NEXTION DISPLAY serial port -----*/
 // #define NEXTION_RX			15
@@ -77,16 +77,18 @@ Supported languages: HU, PL, NL, GR, DE (UA Local/namedays/namedays_UA.h is not 
 //Szabad és MCLK-ra alkalmas jelöltek: GPIO 0, 7, 8, 15, 16, 17, 18, 45, 46
 
 /*----- ENCODER 1 ------*/
-#define ENC_BTNR 47 // S2
 #define ENC_BTNL 42 // S1
+#define ENC_BTNR 47 // S2
 #define ENC_BTNB 21 // KEY
 #define ENC_INTERNALPULLUP	true
+#define ENC_HALFQUARD true
 
 /*----- ENCODER 2 -----*/
-#define ENC2_BTNR 41 // S2
 #define ENC2_BTNL 40 // S1
+#define ENC2_BTNR 41 // S2
 #define ENC2_BTNB 39 // KEY
 #define ENC2_INTERNALPULLUP	true
+#define ENC2_HALFQUARD       true
 
 /*----- CLOCK MODUL RTC DS3132 -----*/
 // #define RTC_SCL			     7
@@ -94,9 +96,9 @@ Supported languages: HU, PL, NL, GR, DE (UA Local/namedays/namedays_UA.h is not 
 // #define RTC_MODULE DS3231
 
 /*----- REMOTE CONTROL INFRARED RECEIVER -----*/
-/*----- Alvásból ébresztéshez a GPIO 2 -őt kell használni, mert a GPIO 38 nem RTC pin. A PCB-n át kell kötni! -----*/
-/*----- To wake from sleep, you must use GPIO 2, because GPIO 38 is not an RTC pin. It must be connected via the PCB! -----*/
-#define IR_PIN 2  //38
+/*----- Alvásból ébresztéshez a GPIO 2 -őt kell használni -----*/
+/*----- To wake from sleep, you must use GPIO 2 -----*/
+#define IR_PIN 2
 #define IR_NEC_ONLY  // Build only NEC decoder sources from IRremoteESP8266 (faster/smaller build)
 
 /*----- Sleep functions -----*/
@@ -129,7 +131,7 @@ erősítő tápellátását kapcsoló relét. Amikor nincs zenelejátszás (STOP
 Ez a változás akkor történik, amikor a képernyővédő "while not playing" üzemmódban bekapcsol.
 This pin controls the amplifier's power supply. When music is playing, the pin is set to HIGH to control the relay.
 When music is not playing (stopped or volume is 0), the pin is set to LOW. This change occurs when the screensaver is running. -----*/
-// #define PWR_AMP 2
+// #define PWR_AMP 38
 
 /*----- Ha ez definiálva van a rádió indításakor, mindig az első csatorna lesz beállítva. -----*/
 /*----- If this is defined at radio startup, the first channel will always be set. -----*/
@@ -141,4 +143,4 @@ When music is not playing (stopped or volume is 0), the pin is set to LOW. This 
 // #define dlnaHost "192.168.1.200"
 // #define dlnaIDX  21
 
-//#define POWER_LED 38      // Button LED pin (will be turned on when player is on)
+#define POWER_LED 38      // Button LED pin (will be turned on when player is on)

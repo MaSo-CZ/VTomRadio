@@ -148,7 +148,17 @@ Ha vezetékkel van kivezetve az IR led a tápvezeték összeszed zajokat a körn
 A zajt tanításnál lehet észrevenni, mert a távirányító megnyomása nélkül jelennek meg hexadecimális számok, vagy nem tudod ugyanazt a számot generálni egy gomb nyomkodásával.  
 Az infravörös led tápjára párhuzamosan kell kötni egy 10μF elektrolit és egy 100nF kerámia kondenzátort, közel az infravevőhöz. 
 
-### PCB képek:
+## Az ESP32-S3-DevKitC 1 N16R8 fejlesztőmodul lábkiosztása.      
+<img src="../../images//esp32-S3-DevKitC-1-original-pinout-low.jpg" alt="esp32-S3-DevKitC-1-original-pinout-low" height="400"><br><br>   
+
+- Az SPI lábak ellenőrzéséhez itt találod a board-variánsokat:  
+  https://github.com/espressif/arduino-esp32/tree/master/variants
+
+- Fordítási konfigurációk:  
+  https://github.com/sivar2311/ESP32-S3-PlatformIO-Flash-and-PSRAM-configurations
+   
+
+## PCB képek:
 
 - A rögzítő furatok és a kűlső méretek nem változtak.   
 <br><br>

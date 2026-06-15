@@ -187,4 +187,6 @@ Az infravörös led tápjára párhuzamosan kell kötni egy 10μF elektrolit és
 | LTV817STA1 | Optocsatoló 5kV tranzisztor kimenet 35V 50mA 80KHz 4p. SMD 
 | Csatlakozók| JST-XH | 2,54 |
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     
-## https://buymeacoffee.com/vtom
+<a href="https://buymeacoffee.com/vtom">
+    <img src="../../images/buymeacoffee.png" width="200">
+</a>

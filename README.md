@@ -26,19 +26,23 @@ Főbb változtatások:
 !!! Figyelem !!!
 Ez a verzió kizárólag az ESP32-S3-devkit-C1 N16R8, 44 lábú modulhoz és
 - ILI9488 480x320 felbontású SPI (LCD) 
+- ILI9341 320x240 felbontású SPI (LCD)
 - ST7796 480x320 felbontású SPI (LCD)   
+
 kijelzőhöz készült és csak az audioI2S DAC eszközzel működik megfelelően, [PCM5102A](PCM5102A) -val tesztelve!
 - A program működéséhez 16MB flash memória és 8MB PSRAM szükséges!
 - Arduino Core 3.3.7 használatával tesztelve. Arduino Core 3.3.8 verzióval nem működik megfelelően !!!   
 
-A programhoz ajánlott a Visual Studio Code szerkesztő használata a PlatformIO plugin-nal, de az Arduino IDE-vel is működik. 
-
-PlatformIO esetén a mellékelt platformio.ini fájlban meg vannak adva a szükséges könyvtárak és beállítások, így csak az alábbi parancsokat kell kiadni. 
+- A programhoz ajánlott a Visual Studio Code szerkesztő használata a PlatformIO plugin-nal, de az Arduino IDE-vel is működik.   
+- A Visual Studio Code szerkesztő letölthető innen: https://code.visualstudio.com/    
+- Telepítés után a bal oldali menüben EXTENSIONS gombra kattintva a keresőbe írd be: PlatformIO IDE és telepítsd. 
+- A projektet a VTomRadio/VTomRadio/VTomRadio.code-workspace fájl megnyitásával tudod elindítani.  
+- A program automatikusan letölti a szükséges könyvtárakat, de ha valamiért nem sikerülne, akkor a platformio.ini fájlban megadott könyvtárakat manuálisan is telepítheted.
 - Első telepítés előtt célszerű a teljes flash memória törlése az előző verziók maradványainak eltávolítása érdekében!
 ```
 pio run --target erase
 ```
-- Ezután a következő parancsot kell kiadni a kód feltöltéséhez. A parancs automatikusan létrehozza a szükséges particiókat a gyökérkönyvtárban elhelyezett partitions.csv fájl alapján a 16 MB-os flash memória méretéhez igazítva és feltölti a firmware-t.
+- Ezután a következő parancsot kell kiadni a kód feltöltéséhez. A program egyedi partíciós táblát használ. A parancs automatikusan létrehozza a szükséges particiókat a gyökérkönyvtárban elhelyezett partitions.csv fájl alapján a 16 MB-os flash memória méretéhez igazítva és feltölti a firmware-t.
 ```
 pio run --target upload
 ```
@@ -48,7 +52,7 @@ pio run --target uploadfs
 ```
 - Ezek a fájlok könyvtárankén elkülönítve itt találhatóak, ezekkel teendő nincs.
 ```
-        VTomRadio/data/data     Lejátszási lista, jelszó
+        VTomRadio/data/data     Lejátszási lista, jelszó, téma, beállítások, stb.
         VTomRadio/data/www      WEB UI fájlok
         VTomRadio/data/fonts    Betűtípusok
         VTomRadio/data/images   Képek   
@@ -81,7 +85,7 @@ Az ESP modulról itt olvasható:
 esp32-S3-devkit-C1 44 pins https://randomnerdtutorials.com/esp32-s3-devkitc-pinout-guide 
 
 ## Nevnapok megjelenitese:
-A program képes megjeleníteni a HU, PL, GR, DE nyelvű névnapokat.
+A program képes megjeleníteni a HU, PL, NL, GR, DE nyelvű névnapokat.
 - A myoptions.h fájlban az alábbi paranccsal állíthatod be a megjelenítendő névnapokat.   
 ```
 #define NAMEDAYS_FILE HU   
@@ -100,7 +104,8 @@ Ha más nyelven szeretnéd használni vedd fel velem a kapcsolatot.
 A névnapok megjelenítése a WEB-es felületen kikapcsolható options/ SYSTEM-> Nameday gombbal.
 
 ## PCB - nyomtatott aramkor:
-
+- A PCB nyomtatott áramkör a VTom Radio projekthez készült.    
+Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
 
 ## 3D nyomtatasi tervek és a hozzájuk illeszkedő kijelzők
 - IPS 4.0 Inch, SPI, ILI9488 Factory TFT LCD 480*320, 14 Pin Electronic Board  
@@ -112,7 +117,10 @@ A névnapok megjelenítése a WEB-es felületen kikapcsolható options/ SYSTEM->
 
 ## Version history: 
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     
-### https://buymeacoffee.com/vtom
+<a href="https://buymeacoffee.com/vtom">
+    <img src="images/buymeacoffee.png" width="200">
+</a>
+
 ## v0.1.6   
 - A POWER LED bekapcsolás idejének változtatása.      
     [A PCB verzio:206.05.25 együttműködéséhez.](PCB/PCB_2026_05_25/readme.md)

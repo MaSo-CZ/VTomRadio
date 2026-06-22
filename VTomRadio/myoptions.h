@@ -58,12 +58,12 @@ Supported languages: HU, PL, NL, GR, DE (UA Local/namedays/namedays_UA.h is not 
 // #define TS_CS    3
 
 /*----- Touch I2C -----*/
- #define TS_MODEL TS_MODEL_FT6X36
+#define TS_MODEL TS_MODEL_FT6X36
 // #define TS_MODEL TS_MODEL_AXS15231B
- #define TS_SCL     7
- #define TS_SDA     8
- #define TS_INT    17 
- #define TS_RST     1
+#define TS_SCL     7
+#define TS_SDA     8
+#define TS_INT    17 
+#define TS_RST     1
 
 /*----- NEXTION DISPLAY serial port -----*/
 // #define NEXTION_RX			15
@@ -143,4 +143,4 @@ When music is not playing (stopped or volume is 0), the pin is set to LOW. This 
 // #define dlnaHost "192.168.1.200"
 // #define dlnaIDX  21
 
-#define POWER_LED 38      // Button LED pin (will be turned on when player is on)
+#define POWER_LED 38      // Button LED, DAC, RTC power on/off pin 

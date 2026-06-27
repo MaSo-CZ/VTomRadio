@@ -103,17 +103,18 @@ Ha más nyelven szeretnéd használni vedd fel velem a kapcsolatot.
 
 A névnapok megjelenítése a WEB-es felületen kikapcsolható options/ SYSTEM-> Nameday gombbal.
 
-## PCB - nyomtatott aramkor:
+## PCB nyomtatott aramkor:
 - A PCB nyomtatott áramkör a VTom Radio projekthez készült.    
 Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
 
-## 3D nyomtatasi tervek és a hozzájuk illeszkedő kijelzők
+## 3D nyomtatasi tervek
 - IPS 4.0 Inch, SPI, ILI9488 Factory TFT LCD 480*320, 14 Pin Electronic Board  
 (SPI resistive touch XPT2046) https://www.aliexpress.com/item/1005006287831546.html
    - 3D nyomtatási terv --> https://www.printables.com/model/1489380-yoradio-case-for-ips-40-inch-ili9488-tft-lcd-48032
-- IPS 3.5 Inch, SPI, ILI9488 14 pin Full View Angle 480*320 
-(I2C capacitive touch FT6236) https://www.aliexpress.com/item/1005007789737257.html    
-   - 3D nyomtatási terv --> https://www.printables.com/model/1621877-yoradio-case-for-ips-ctp-35-inch-spi-red-ili9488-f
+- IPS 3.5 Inch, SPI 14 pin Full View Angle 480*320 displays
+   - ILI9488 480x320 felbontású SPI LCD (SPI resistive touch XPT2046) https://www.aliexpress.com/item/1005007789737257.html 
+   - ST7796 480x320 felbontású SPI LCD (I2C capacitive touch FT6336) https://www.aliexpress.com/item/1005005995931721.html 
+   - 3D nyomtatási terv --> https://www.printables.com/model/1621877-yoradio-case-for-ips-35-inch-spi-480320-capacitive
 
 ## Version history: 
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     

@@ -120,12 +120,24 @@ Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     
 <a href="https://buymeacoffee.com/vtom">
     <img src="images/buymeacoffee.png" width="200">
-</a>
+</a>  
+
+## v0.1.7
+- Az ébresztés funkció módosítása az ESP32 WROVER modulhoz.    
+   ESP32 WROVER modulnál csak egy ébresztési pin állítható be. Például:
+   ```cpp
+   #define WAKE_PIN1 ENC_BTNB
+   ```   
+
+   ESP32-S3 modulnál két ébresztési pin állítható be. Például:
+   ```cpp
+   #define WAKE_PIN1 IR_PIN
+   #define WAKE_PIN2 ENC_BTNB
+   ```
 
 ## v0.1.6   
 - A POWER LED bekapcsolás idejének változtatása.      
-    [A PCB verzio:206.05.25 együttműködéséhez.](PCB/PCB_2026_05_25/readme.md)
-
+    [A PCB verzio:206.05.25 együttműködéséhez.](PCB/PCB_2026_06_21/readme.md)
 ## v0.1.5
 - ILI9341 kijelző támogatás hozzáadása. Ez a kijelző 320x240 felbontású, így a megjelenítés kissé módosult, de a program többi része változatlan maradt. (by Scott Barber)
 ### v0.1.4

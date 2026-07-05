@@ -1940,7 +1940,9 @@ void Config::doSleep() {
 #ifdef USE_NEXTION
     nextion.sleep();
 #endif
+
     uint64_t mask = 0;
+
 #if WAKE_PIN1 >= 0 && WAKE_PIN1 < 64
     if (rtc_gpio_is_valid_gpio((gpio_num_t)WAKE_PIN1)) {
         rtc_gpio_pullup_en((gpio_num_t)WAKE_PIN1);
@@ -1948,30 +1950,35 @@ void Config::doSleep() {
         mask |= (1ULL << WAKE_PIN1);
     }
 #endif
-#if WAKE_PIN2 >= 0 && WAKE_PIN2 < 64
+
+// CSAK akkor engedjük a WAKE_PIN2-t, ha ESP32-S3-on vagyunk, mert ott van ANY_LOW!
+#if WAKE_PIN2 >= 0 && WAKE_PIN2 < 64 && defined(CONFIG_IDF_TARGET_ESP32S3)
     if (rtc_gpio_is_valid_gpio((gpio_num_t)WAKE_PIN2)) {
         rtc_gpio_pullup_en((gpio_num_t)WAKE_PIN2);
         rtc_gpio_pulldown_dis((gpio_num_t)WAKE_PIN2);
         mask |= (1ULL << WAKE_PIN2);
     }
 #endif
-    if (mask != 0) { esp_sleep_enable_ext1_wakeup(mask, ESP_EXT1_WAKEUP_ANY_LOW); }
+
+    if (mask != 0) { esp_sleep_enable_ext1_wakeup(mask, EXT1_MODE); }
     esp_sleep_enable_timer_wakeup(config.sleepfor * 60ULL * 1000000ULL);
     esp_deep_sleep_start();
 }
 
 void Config::doSleepW() {
-    analogWrite(BRIGHTNESS_PIN, 0);           // ← add (MB)
-    pinMode(BRIGHTNESS_PIN, OUTPUT);          // ← add (MB)
-    digitalWrite(BRIGHTNESS_PIN, LOW);        // ← add (MB)
-    gpio_hold_en((gpio_num_t)BRIGHTNESS_PIN); // ← add (MB)
-    gpio_deep_sleep_hold_en();                // ← add (MB)
+    analogWrite(BRIGHTNESS_PIN, 0);           
+    pinMode(BRIGHTNESS_PIN, OUTPUT);          
+    digitalWrite(BRIGHTNESS_PIN, LOW);        
+    gpio_hold_en((gpio_num_t)BRIGHTNESS_PIN); 
+    gpio_deep_sleep_hold_en();                
     display.deepsleep();
 
 #ifdef USE_NEXTION
     nextion.sleep();
 #endif
+
     uint64_t mask = 0;
+
 #if WAKE_PIN1 >= 0 && WAKE_PIN1 < 64
     if (rtc_gpio_is_valid_gpio((gpio_num_t)WAKE_PIN1)) {
         rtc_gpio_pullup_en((gpio_num_t)WAKE_PIN1);
@@ -1979,18 +1986,20 @@ void Config::doSleepW() {
         mask |= (1ULL << WAKE_PIN1);
     }
 #endif
-#if WAKE_PIN2 >= 0 && WAKE_PIN2 < 64
+
+// Ugyanaz a védelem ide is az S3 chiphez:
+#if WAKE_PIN2 >= 0 && WAKE_PIN2 < 64 && defined(CONFIG_IDF_TARGET_ESP32S3)
     if (rtc_gpio_is_valid_gpio((gpio_num_t)WAKE_PIN2)) {
         rtc_gpio_pullup_en((gpio_num_t)WAKE_PIN2);
         rtc_gpio_pulldown_dis((gpio_num_t)WAKE_PIN2);
         mask |= (1ULL << WAKE_PIN2);
     }
 #endif
+
     delay(200);
-    if (mask != 0) { esp_sleep_enable_ext1_wakeup(mask, ESP_EXT1_WAKEUP_ANY_LOW); }
+    if (mask != 0) { esp_sleep_enable_ext1_wakeup(mask, EXT1_MODE); }
     esp_deep_sleep_start();
 }
-
 void Config::sleepForAfter(uint16_t sf, uint16_t sa) {
     sleepfor = sf;
     if (sa > 0) {

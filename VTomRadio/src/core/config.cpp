@@ -88,7 +88,7 @@ void parseVersionTriplet(const char* ver, uint8_t& a, uint8_t& b, uint8_t& c) {
     c = clampChannel(strtol(tok, nullptr, 10));
 }
 
-constexpr int8_t kDefaultVolumeCurveDb[21] = {-52, -39, -32, -27, -24, -20, -18, -15, -13, -12, -10, -9, -8, -6, -5, -4, -4, -3, -2, -2, -1};
+constexpr int8_t kDefaultVolumeCurveDb[21] = {-32, -28, -24, -20, -18, -16, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, -0};
 
 bool isVolumeCurveInvalid(const config_t& s) {
     bool allMinusOne = true;

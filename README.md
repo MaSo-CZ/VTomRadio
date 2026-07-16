@@ -17,6 +17,7 @@ Főbb változtatások:
 - [Telepítési tanácsok](#telepitesi-tanacsok)
 - [Nyelvek, területi beállítások](#nyelvek-teruleti-beallitasok)
 - [Névnapok megjelenítése](#nevnapok-megjelenitese)
+- [Hangerőgörbe (Volume Curve) beállítása](#hangerogorbe-volume-curve-beallitasa)
 - [PCB nyomtatott áramkör](#pcb-nyomtatott-aramkor)
 - [3D nyomtatási tervek](#3d-nyomtatasi-tervek)
 - [Version history](#version-history)
@@ -101,10 +102,14 @@ A névnapok tárolása az alábbi fájlokban történik.
 
 Ha más nyelven szeretnéd használni vedd fel velem a kapcsolatot.
 
-A névnapok megjelenítése a WEB-es felületen kikapcsolható options/ SYSTEM-> Nameday gombbal.
+A névnapok megjelenítése a WEB-es felületen kikapcsolható options/ SYSTEM-> Nameday gombbal. 
+
+## Hangerogorbe (Volume Curve) beallitasa 
+A program lehetőséget biztosít a hangerő 0 - 21 értékeinek személyreszabására a VOLUME CURVE funkcióval, amely lehetővé teszi minden hangerő állás személyreszabását -60 - 0 dB értékek között. A VOLUME CURVE beállítása a WEB UI-ban a hangszínszabályzó lenyitásánál a VOLUME CURVE... gombbal indítható.
+Bővebben a hangerőgörbe működéséről a következő oldalon olvashatsz: [Hangerőgörbe (volume curve) működése](Doc/volcurve.md)
 
 ## PCB nyomtatott aramkor:
-- A PCB nyomtatott áramkör a VTom Radio projekthez készült.    
+- A PCB nyomtatott áramkör a VTom Radio projekthez készült. Az összeállításhoz szükséges leírásokat, kapcsolási rajzot, alkatrészlistát és a nyomtatott áramkör tervrajzát a PCB/PCB_2026_05_25 mappában találod. A 2026.06.21 verzió leírása is itt található.   
 Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
 
 ## 3D nyomtatasi tervek
@@ -122,6 +127,12 @@ Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
     <img src="images/buymeacoffee.png" width="200">
 </a>  
 
+## v0.1.8
+- I2S audio könyvtár frissítése V3.4.7g-re. https://github.com/schreibfaul1/ESP32-audioI2S
+- A VOLUME CURVE beállításánál a hangerő 0 - 21 értékeihez tartozó dB értékek összehangolása az audioI2S könyvtárral.   
+ Leírás a következő oldalon olvasható: [Hangerőgörbe (volume curve) működése](Doc/volcurve.md)  
+
+
 ## v0.1.7
 - Az ébresztés funkció módosítása az ESP32 WROVER modulhoz.    
    ESP32 WROVER modulnál csak egy ébresztési pin állítható be. Például:
@@ -134,7 +145,6 @@ Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
    #define WAKE_PIN1 IR_PIN
    #define WAKE_PIN2 ENC_BTNB
    ```
-
 ## v0.1.6   
 - A POWER LED bekapcsolás idejének változtatása.      
     [A PCB verzio: 206.06.21 együttműködéséhez.](PCB/PCB_2026_06_21/readme.md)

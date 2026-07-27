@@ -109,8 +109,8 @@ A program lehetőséget biztosít a hangerő 0 - 21 értékeinek személyreszab�
 Bővebben a hangerőgörbe működéséről a következő oldalon olvashatsz: [Hangerőgörbe (volume curve) működése](Doc/volcurve.md)
 
 ## PCB nyomtatott aramkor:
-- A PCB nyomtatott áramkör a VTom Radio projekthez készült. Az összeállításhoz szükséges leírásokat, kapcsolási rajzot, alkatrészlistát és a nyomtatott áramkör tervrajzát a PCB/PCB_2026_05_25 mappában találod. A 2026.06.21 verzió leírása is itt található.   
-Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
+- A PCB nyomtatott áramkör a VTom Radio projekthez készült. Az összeállításhoz szükséges leírásokat, kapcsolási rajzot, alkatrészlistát és a nyomtatott áramkör tervrajzát a PCB/PCB_2026_06_21 mappában találod.  
+Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
 
 ## 3D nyomtatasi tervek
 - IPS 4.0 Inch, SPI, ILI9488 Factory TFT LCD 480*320, 14 Pin Electronic Board  
@@ -126,6 +126,14 @@ Itt olvashatsz róla bővebben: [PCB_2026_05_25](PCB/PCB_2026_05_25/readme.md)
 <a href="https://buymeacoffee.com/vtom">
     <img src="images/buymeacoffee.png" width="200">
 </a>  
+
+## v0.1.10
+- Hangszínszabályzó balance jobb és bal csatorna fordított működésének javítása.
+- Képernyő forgatás beállítása a myoptions.h fájlban, ha szükséges.
+```
+/*----- SCREEN ROTATION -----*/
+#define DEFAULT_SCREEN_ROTATION 3  /* 0-3 */
+```
 
 ## v0.1.9 (by Marek Zettík)
 - Cseh nyelvi támogatás és névnapok hozzáadva. 

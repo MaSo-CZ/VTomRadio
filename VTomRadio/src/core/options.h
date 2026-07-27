@@ -80,7 +80,7 @@ STORE YOUR SETTINGS IN THE *** myoptions.h *** FILE.
 /*        TFT DISPLAY             */
 #ifndef DEFAULT_SCREEN_ROTATION
   #if DSP_MODEL == DSP_ST7796
-    #define DEFAULT_SCREEN_ROTATION 7 // in case of mirror image --> 3
+    #define DEFAULT_SCREEN_ROTATION 3
   #elif DSP_MODEL == DSP_ILI9488
     #define DEFAULT_SCREEN_ROTATION 1
   #else

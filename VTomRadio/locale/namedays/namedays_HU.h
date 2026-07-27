@@ -72,7 +72,7 @@ const char* namedays[] = {
   "Viktor,Győző,Edina",
   "Ákos,Bátor,Gábor",
   "Elemér,Oszvald,Román",
-  "",
+  "Auguszta,Albin", // Február 29. (Szökőnap)
 
   // Március
   "Albin,Albina,Leonita",

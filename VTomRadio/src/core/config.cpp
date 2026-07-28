@@ -1506,7 +1506,7 @@ void Config::setVuBidirectional(bool val) {
 
 void Config::setBalance(int8_t balance) {
     saveValue(&store.balance, balance);
-    player.setBalance(-store.balance); // "audio_change"  -16 to 16 fordítás 16 to -16
+    player.setBalance(store.balance); 
     netserver.requestOnChange(BALANCE, 0);
 }
 

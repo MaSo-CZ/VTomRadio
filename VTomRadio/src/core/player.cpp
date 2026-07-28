@@ -78,7 +78,7 @@ void Player::init() {
   setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT, I2S_MCLK);
   #endif
 #endif
-  setBalance(-config.store.balance);  // "audio_change"   -16 to 16 fordítás 16 to -16
+  setBalance(config.store.balance);
   setTone(config.store.bass, config.store.middle, config.store.trebble);
   setVolumeSteps(21);  // Alapértelmezetten 21, ami 0-21-ig terjedő értékeket engedélyez. Ez a változtatás lehetővé teszi a finomabb hangerőszabályozást, különösen alacsonyabb hangerőszinteken.
   for (uint8_t i = 1; i <= 21; ++i) {

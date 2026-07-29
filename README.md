@@ -29,6 +29,7 @@ Ez a verzió kizárólag az ESP32-S3-devkit-C1 N16R8, 44 lábú modulhoz és
 - ILI9488 480x320 felbontású SPI (LCD) 
 - ILI9341 320x240 felbontású SPI (LCD)
 - ST7796 480x320 felbontású SPI (LCD)   
+- ST7789 320x240 felbontású SPI (LCD)
 
 kijelzőhöz készült és csak az audioI2S DAC eszközzel működik megfelelően, [PCM5102A](PCM5102A) -val tesztelve!
 - A program működéséhez 16MB flash memória és 8MB PSRAM szükséges!
@@ -86,7 +87,7 @@ Az ESP modulról itt olvasható:
 esp32-S3-devkit-C1 44 pins https://randomnerdtutorials.com/esp32-s3-devkitc-pinout-guide 
 
 ## Nevnapok megjelenitese:
-A program képes megjeleníteni a HU, PL, NL, GR, DE nyelvű névnapokat.
+A program képes megjeleníteni a HU, PL, NL, GR, DE, SK, CZ, UA nyelvű névnapokat.
 - A myoptions.h fájlban az alábbi paranccsal állíthatod be a megjelenítendő névnapokat.   
 ```cpp
 #define NAMEDAYS_FILE HU   
@@ -95,7 +96,9 @@ A névnapok tárolása az alábbi fájlokban történik.
 
       VTomRadio/local/namedays/namedays_HU.h
       VTomRadio/local/namedays/namedays_PL.h
-      VTomRadio/local/namedays/namedays_GR.h  
+      VTomRadio/local/namedays/namedays_GR.h
+      VTomRadio/local/namedays/namedays_CZ.h
+      VTomRadio/local/namedays/namedays_SK.h
       VTomRadio/local/namedays/namedays_DE.h
       VTomRadio/local/namedays/namedays_NL.h
       VTomRadio/local/namedays/namedays_UA.h

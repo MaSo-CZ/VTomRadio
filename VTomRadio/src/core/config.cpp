@@ -426,7 +426,6 @@ bool Config::prepareForPlaying(uint16_t stationId) {
     netserver.requestOnChange(MODE, 0);
     netserver.loop();
     netserver.loop();
-    if (store.smartstart != 2) { setSmartStart(0); }
     return true;
 }
 
@@ -443,7 +442,6 @@ void Config::configPostPlaying(uint16_t stationId) { // DLNA mod
         saveValue(&store.lastStation, stationId);
     }
 
-    if (store.smartstart != 2) { setSmartStart(1); }
     netserver.requestOnChange(MODE, 0);
     display.putRequest(PSTART);
 }
@@ -1257,7 +1255,7 @@ void Config::setIrBtn(int val) {
 void Config::resetSystem(const char* val, uint8_t clientId) {
     BOOTLOG("***************** RESET SYSTEM *****************");
     if (strcmp(val, "system") == 0) {
-        saveValue(&store.smartstart, (uint8_t)2, false);
+        saveValue(&store.smartstart, (uint8_t)0, false);
         saveValue(&store.audioinfo, false, false);
         saveValue(&store.vumeter, false, false);
         saveValue(&store.vuPeak, true, false);
@@ -1374,7 +1372,7 @@ void Config::setDefaults() {
     store.countStation = 0;
     store.lastSSID = 0;
     store.audioinfo = false;
-    store.smartstart = 2;
+    store.smartstart = 0;
     store.tzHour = 2;
     store.tzMin = 0;
     store.timezoneOffset = 0;
@@ -1496,8 +1494,8 @@ void Config::setTone(int8_t bass, int8_t middle, int8_t trebble) {
     netserver.requestOnChange(EQUALIZER, 0);
 }
 
-void Config::setSmartStart(uint8_t ss) {
-    saveValue(&store.smartstart, ss);
+void Config::setSmartStartEnabled(bool enabled) {
+    saveValue(&store.smartstart, static_cast<uint8_t>(enabled ? 1 : 0));
 }
 
 void Config::setVuBidirectional(bool val) {

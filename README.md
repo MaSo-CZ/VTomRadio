@@ -127,6 +127,10 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
     <img src="images/buymeacoffee.png" width="200">
 </a>     
 
+## v0.1.12
+- Smart Start indítási hiba javítása.  
+Mostantól a program csak a WEB UI-ban beállított "Smart Start" állapotot veszi figyelembe, az utolsó állapotot nem menti el.  
+
 ## v0.1.11  
 - A LovyanGFX könyvtár SPI busz sebességének csökkentése a kijelző stabilitásának javítása érdekében.    
 A nagyfrekvenciás SPI busz megköveteli a megfelelő minőségű vezetékelést, különben a kijelzőn hibás képet jelenít meg. A LovyanGFX könyvtárban a SPI busz sebessége 40 MHz, ami sok esetben túl gyors lehet a megépített hardverhez. A myoptions.h fájlban a következő sorokkal csökkenthető a sebesség 30 MHz-re, ami stabilabb működést eredményezhet. 

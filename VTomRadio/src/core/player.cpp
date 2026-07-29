@@ -115,7 +115,6 @@ void Player::resetQueue() {
 }
 
 void Player::stopInfo() {
-  config.setSmartStart(0);
   netserver.requestOnChange(MODE, 0);
 }
 

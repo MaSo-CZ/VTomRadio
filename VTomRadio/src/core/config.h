@@ -323,7 +323,8 @@ class Config {
     bool    saveWifi();
     void    setTimeConf();
     bool    saveWifiFromNextion(const char* post);
-    void    setSmartStart(uint8_t ss);
+    bool    isSmartStartEnabled() const { return store.smartstart == 1; }
+    void    setSmartStartEnabled(bool enabled);
     void    setVuBidirectional(bool val);
     void    setBitrateFormat(BitrateFormat fmt) { configFmt = fmt; }
     void    initPlaylist();

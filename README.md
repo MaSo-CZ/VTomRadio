@@ -125,7 +125,19 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     
 <a href="https://buymeacoffee.com/vtom">
     <img src="images/buymeacoffee.png" width="200">
-</a>  
+</a>     
+
+## v0.1.11  
+- A LovyanGFX könyvtár SPI busz sebességének csökkentése a kijelző stabilitásának javítása érdekében.    
+A nagyfrekvenciás SPI busz megköveteli a megfelelő minőségű vezetékelést, különben a kijelzőn hibás képet jelenít meg. A LovyanGFX könyvtárban a SPI busz sebessége 40 MHz, ami sok esetben túl gyors lehet a megépített hardverhez. A myoptions.h fájlban a következő sorokkal csökkenthető a sebesség 30 MHz-re, ami stabilabb működést eredményezhet. 
+Amennyiben a kijelző stabilan működik, akkor a myoptions.h fájlban a következő sorokat hagyd kikommentelve, így a LovyanGFX könyvtár az eredeti sebességgel fog működni. 
+```
+/*----- LovyanGFX SPI bus speed -----*/
+/* Usable values ​​are 24, 26, 28, 30, 32, 36 MHz */
+// #  define LGFX_LCD_FREQ_WRITE 30000000             // original: 40000000
+// #  define LGFX_LCD_FREQ_READ  10000000             // original: 16000000
+// #  define LGFX_TOUCH_SPI_FREQ   800000             // original: 2500000
+```   
 
 ## v0.1.10
 - Hangszínszabályzó balance jobb és bal csatorna fordított működésének javítása.

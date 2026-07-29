@@ -38,9 +38,17 @@ Supported languages: HU, PL, NL, GR, DE, CZ (UA Local/namedays/namedays_UA.h is 
 // #define HTTP_PASS ""               /* HTTP basic authentication password */
 
 /*----- LCD DISPLAY -----*/
-//#define DSP_MODEL DSP_ILI9488
-#define DSP_MODEL DSP_ST7796
+#define DSP_MODEL DSP_ILI9488
+//#define DSP_MODEL DSP_ST7796
 //#define DSP_MODEL DSP_ILI9341
+
+/*----- LovyanGFX SPI bus speed -----*/
+/* Instabil kijelző, rossz vezetékelésnél használd csak. A használható értékek 24, 26, 28, 30, 32, 36 MHz */
+/* Unstable display, use only if wiring is bad. Usable values ​​are 24, 26, 28, 30, 32, 36 MHz */
+// #  define LGFX_LCD_FREQ_WRITE 30000000             // original: 40000000
+// #  define LGFX_LCD_FREQ_READ  10000000             // original: 16000000
+// #  define LGFX_TOUCH_SPI_FREQ   800000             // original: 2500000
+
 
 /*----- SCREEN ROTATION -----*/
 //#define DEFAULT_SCREEN_ROTATION 3  /* 0-3 */
@@ -57,16 +65,16 @@ Supported languages: HU, PL, NL, GR, DE, CZ (UA Local/namedays/namedays_UA.h is 
 */
 
 /*----- Touch SPI -----*/
-//#define TS_MODEL TS_MODEL_XPT2046
-//#define TS_CS    3
+#define TS_MODEL TS_MODEL_XPT2046
+#define TS_CS    3
 
 /*----- Touch I2C -----*/
-#define TS_MODEL TS_MODEL_FT6X36
+// #define TS_MODEL TS_MODEL_FT6X36
 // #define TS_MODEL TS_MODEL_AXS15231B
-#define TS_SCL     7
-#define TS_SDA     8
-#define TS_INT    17 
-#define TS_RST     1
+// #define TS_SCL     7
+// #define TS_SDA     8
+// #define TS_INT    17 
+// #define TS_RST     1
 
 /*----- NEXTION DISPLAY serial port -----*/
 // #define NEXTION_RX			15

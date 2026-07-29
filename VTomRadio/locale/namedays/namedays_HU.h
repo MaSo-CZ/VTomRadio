@@ -9,7 +9,7 @@
 
 const char* nameday_label = "Névnap:";
 
-const char* namedays[] = {
+const char* const namedays[] = {
   // Január
   "Alpár,Fruzsina,Bazil",
   "Ábel,Gergely,Vazul",

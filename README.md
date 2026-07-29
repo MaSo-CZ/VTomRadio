@@ -130,6 +130,8 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
 ## v0.1.12
 - Smart Start indítási hiba javítása.  
 Mostantól a program csak a WEB UI-ban beállított "Smart Start" állapotot veszi figyelembe, az utolsó állapotot nem menti el.  
+- SK névnapok hozzáadva. (by Pali Pal)
+- ST7789 kijelző támogatás hozzáadva. (by Marek Zettík)
 
 ## v0.1.11  
 - A LovyanGFX könyvtár SPI busz sebességének csökkentése a kijelző stabilitásának javítása érdekében.    

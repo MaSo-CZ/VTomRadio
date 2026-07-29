@@ -11,7 +11,7 @@ https://cs.wikipedia.org/wiki/Jmeniny_v_%C4%8Cesku
 
 const char* nameday_label = "Svátky:";
 
-const char* namedays[] = {
+const char* const namedays[] = {
   // Leden
   "Nový rok",
   "Karina,Vasil,Ábel,Dětmar",

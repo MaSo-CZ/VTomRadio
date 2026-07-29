@@ -24,7 +24,7 @@
 #define LANGUAGE HU
 
 /* -- Névnapok megjelenítése -- Display name days --
-Supported languages: HU, PL, NL, GR, DE, CZ (UA Local/namedays/namedays_UA.h is not filled in.) */
+Supported languages: HU, PL, NL, GR, DE, CZ, SK (UA Local/namedays/namedays_UA.h is not filled in.) */
 #define NAMEDAYS_FILE HU
 
 #define USE_BUILTIN_LED false /* The RGB LED does not turn on.. */
@@ -38,10 +38,12 @@ Supported languages: HU, PL, NL, GR, DE, CZ (UA Local/namedays/namedays_UA.h is 
 // #define HTTP_PASS ""               /* HTTP basic authentication password */
 
 /*----- LCD DISPLAY -----*/
-#define DSP_MODEL DSP_ILI9488
-//#define DSP_MODEL DSP_ST7796
 //#define DSP_MODEL DSP_ILI9341
+#define DSP_MODEL DSP_ILI9488
 //#define DSP_MODEL DSP_ST7789
+//#define DSP_MODEL DSP_ST7796
+
+
 
 /*----- LovyanGFX SPI bus speed -----*/
 /* Instabil kijelző, rossz vezetékelésnél használd csak. A használható értékek 24, 26, 28, 30, 32, 36 MHz */

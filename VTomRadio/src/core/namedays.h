@@ -8,7 +8,7 @@
 #include <Arduino.h>
 
 // Tömb deklaráció
-extern const char* namedays[];
+extern const char* const namedays[];
 
 // Label deklaráció
 extern const char* nameday_label;

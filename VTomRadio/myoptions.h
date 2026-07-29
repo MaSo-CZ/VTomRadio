@@ -41,6 +41,7 @@ Supported languages: HU, PL, NL, GR, DE, CZ (UA Local/namedays/namedays_UA.h is 
 #define DSP_MODEL DSP_ILI9488
 //#define DSP_MODEL DSP_ST7796
 //#define DSP_MODEL DSP_ILI9341
+//#define DSP_MODEL DSP_ST7789
 
 /*----- LovyanGFX SPI bus speed -----*/
 /* Instabil kijelző, rossz vezetékelésnél használd csak. A használható értékek 24, 26, 28, 30, 32, 36 MHz */

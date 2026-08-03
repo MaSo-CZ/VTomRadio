@@ -130,6 +130,12 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
     <img src="images/buymeacoffee.png" width="200">
 </a>     
 
+## v0.1.13
+- Téma szerkesztőben a VU_PEAK és a PRST_FAV_INACTIVE beállítások hozzáadása.
+- Új téma hozzáadása: 
+  ```
+  Custom_themes\VTom_Vintage_Amber.csv
+  ```
 ## v0.1.12
 - Smart Start indítási hiba javítása.  
 Mostantól a program csak a WEB UI-ban beállított "Smart Start" állapotot veszi figyelembe, az utolsó állapotot nem menti el.  

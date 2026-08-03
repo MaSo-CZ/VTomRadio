@@ -2,10 +2,10 @@
 #    define options_h
 #    pragma once
 
-#    define FW_VERSION "0.1.12"
+#    define FW_VERSION "0.1.13"
 
 #    ifndef THEME_CSV_VERSION
-#        define THEME_CSV_VERSION "0.0.1"
+#        define THEME_CSV_VERSION "0.0.3"
 #    endif
 
 /*******************************************************
@@ -188,13 +188,13 @@ STORE YOUR SETTINGS IN THE *** myoptions.h *** FILE.
   #define BTN_RIGHT             255
 #endif
 #ifndef BTN_UP
-  #define BTN_UP            255
+  #define BTN_UP                255
 #endif
 #ifndef BTN_DOWN
-  #define BTN_DOWN             255
+  #define BTN_DOWN              255
 #endif
 #ifndef BTN_MODE
-  #define BTN_MODE             255
+  #define BTN_MODE              255
 #endif
 #ifndef BTN_INTERNALPULLUP
   #define BTN_INTERNALPULLUP    true
@@ -642,7 +642,7 @@ STORE YOUR SETTINGS IN THE *** myoptions.h *** FILE.
   #define PWR_AMP                255
 #endif
 
-#include <SPI.h>
+//#include <SPI.h>
 #if !defined(CONFIG_IDF_TARGET_ESP32)
 #define VSPI FSPI
 #endif

@@ -172,7 +172,7 @@ void Display::_bootScreen() {
     _boot = new Page();
     _boot->addWidget(new ProgressWidget(bootWdtConf, bootPrgConf, 0xFFFF, 0));
     _bootstring = (textBoxWidget*)&_boot->addWidget(
-        new textBoxWidget(bootstrConf, 50, true, 0xFFFF, 0, config.theme.div)); // Módosítás: textBoxWidget használata a boot szöveghez, hogy a hosszabb szövegek is elférjenek.
+        new textBoxWidget(bootstrConf, 50, true, 0xFFFF, 0, config.theme.ip_border)); 
     _pager->addPage(_boot);
     _pager->setPage(_boot, true);
     dsp.drawLogo(bootLogoTop);

@@ -71,7 +71,7 @@ pio run --target uploadfs
 
 ## Nyelvek, teruleti beallitasok:
 
-Aprogram beépített nyelveket és területi beállításokat tartalmaz HU, PL, GR, EN, RU, NL, SK, UA, DE nyelveken.   
+Aprogram beépített nyelveket és területi beállításokat tartalmaz HU, PL, GR, EN, RU, NL, CZ, SK, UA, DE nyelveken.   
 A myoptions.h fájlban az alábbi paranccsal állíthatod be.   
 ```cpp
 #define LANGUAGE HU

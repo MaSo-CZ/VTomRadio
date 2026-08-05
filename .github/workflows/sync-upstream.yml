@@ -1,0 +1,21 @@
+name: Sync Upstream (Hourly)
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Spouští se každou hodinu (vždy v celou)
+  workflow_dispatch:     # Tlačítko pro ruční spuštění kdykoliv
+
+jobs:
+  sync_latest_from_upstream:
+    name: Sync Latest Commits from Upstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+
+      - name: Sync upstream changes
+        uses: a2aa/workflow-git-sync@v1
+        with:
+          upstream_repository: 'VaraiTamas/VTomRadio'
+          target_branch: 'main' # Případně 'master'
+          github_token: ${{ secrets.GITHUB_TOKEN }}

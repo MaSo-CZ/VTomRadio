@@ -2,23 +2,25 @@ name: Sync Upstream (Hourly)
 
 on:
   schedule:
-    - cron: '0 * * * *' # Spouští se každou hodinu
-  workflow_dispatch:     # Ruční spuštění
+    - cron: '0 * * * *' # Každou hodinu
+  workflow_dispatch:     # Ruční tlačítko
 
 jobs:
-  sync_latest_from_upstream:
-    name: Sync Latest Commits from Upstream
+  sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sync upstream changes
-        uses: pujiyung/actions-upstream-sync@v2.5.1
-        with:
-          upstream_sync_repo: 'VaraiTamas/VTomRadio' # ZDE DOPLŇ SPRÁVNÉHO AUTORA (např. 'tom/VTomRadio')
-          upstream_sync_branch: 'main'                  # Případně 'master' podle originálu
-          target_sync_branch: 'main'                    # Tvoje větev
-          target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Sync from Upstream
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/VaraiTamas/VTomRadio.git
+          git fetch upstream
+          git checkout main
+          git merge upstream/main --ff-only || git merge upstream/main -m "Auto-sync from upstream"
+          git push origin main

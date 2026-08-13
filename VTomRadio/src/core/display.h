@@ -133,6 +133,4 @@ class Display {
 
 #endif
 
-void display_show_maintenance_screen();
-
 extern Display display;

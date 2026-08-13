@@ -130,11 +130,15 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
     <img src="images/buymeacoffee.png" width="200">
 </a>     
 
+## v0.1.14 (by Botfai Tibor)
+- A LittleFS-SPIFFS Partition Manager program frissítése a v0.6.0 verzióra, amely lehetővé teszi a rádió fájlrendszerének kezelését WiFi karbantartó protokollon keresztül. Ezen program a továbbiakban SOROS PORTON keresztül nem működik!  
+A program a VTomRadio/LittleFS_manager mappában található.  
+Bővebben a programról a következő oldalon olvashatsz: [LittleFS-SPIFFS Partition Manager v0.6.0](LittleFS_manager/Readme.md)
 ## v0.1.13
 - Téma szerkesztőben a VU_PEAK és a PRST_FAV_INACTIVE beállítások hozzáadása.
 - Új téma hozzáadása: 
   ```
-  Custom_themes\VTom_Vintage_Amber.csv
+  Custom_themes\VTom_Vintage_amber.csv
   ```
 ## v0.1.12
 - Smart Start indítási hiba javítása.  

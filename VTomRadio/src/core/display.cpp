@@ -15,7 +15,6 @@
 #include "../displays/widgets/pages.h"
 #include "../displays/tools/language.h"
 #include "fonts.h"
-#include "serial_littlefs.h"
 #include "touchscreen.h"
 // #define LGFX_USE_PNG
 
@@ -876,24 +875,3 @@ void Display::putRequest(displayRequestType_e type, int payload) {
 }
 //============================================================================================================================
 #endif // DUMMYDISPLAY
-
-#ifndef DUMMYDISPLAY
-void display_show_maintenance_screen() {
-    dsp.initDisplay();
-    dsp.wake();
-#    if BRIGHTNESS_PIN != 255
-    pinMode(BRIGHTNESS_PIN, OUTPUT);
-    analogWrite(BRIGHTNESS_PIN, map(100, 0, 100, 0, 255));
-#    endif
-    dsp.fillScreen(0x0000);
-    uint16_t cx = dsp.width() / 2;
-    uint16_t cy = dsp.height() / 2;
-    dsp.setTextSize(2);
-    dsp.setTextDatum(datum_t::middle_center);
-    dsp.setTextColor(0xFFFF, 0x0000);
-    dsp.drawString("LittleFS Serial Service", cx, cy - 20);
-    dsp.drawString("Maintenance mode active", cx, cy + 14);
-}
-#else
-void display_show_maintenance_screen() {}
-#endif

@@ -12,6 +12,7 @@
 #include "controls.h"
 #include "commandhandler.h"
 #include "timekeeper.h"
+#include "fs_api_http.h"
 #include "../displays/widgets/widgetsconfig.h"
 
 #ifdef USE_DLNA  //DLNA mod
@@ -417,6 +418,7 @@ bool NetServer::begin(bool quiet) {
   }
 
   webserver.on("/", HTTP_ANY, handleIndex);
+  fs_api_http::register_routes(webserver);
   webserver.onNotFound(handleNotFound);
   webserver.onFileUpload(handleUpload);
 //DLNA mod
@@ -1178,10 +1180,10 @@ void NetServer::processQueue() {
         int wsPos = snprintf(
           wsBuf,
           sizeof(wsBuf),
-          "{\"sst\":%d,\"aif\":%d,\"rssiastext\":%d,\"vu\":%d,\"vupeak\":%d,\"vubox\":%d,\"softr\":%d,\"vut\":%d,\"mdns\":\"%s\",\"ipaddr\":\"%s\", \"watchdog\": %d, \"stallwatchdog\": %d, \"seriallittlefs\": %d, "
+          "{\"sst\":%d,\"aif\":%d,\"rssiastext\":%d,\"vu\":%d,\"vupeak\":%d,\"vubox\":%d,\"softr\":%d,\"vut\":%d,\"mdns\":\"%s\",\"ipaddr\":\"%s\", \"watchdog\": %d, \"stallwatchdog\": %d, "
           "\"nameday\": %d, \"clocktts\": %d, \"clockttslang\": \"%.2s\", \"clockttsinterval\": %u, ",
           config.isSmartStartEnabled(), config.store.audioinfo, config.store.rssiAsText, config.store.vumeter, config.store.vuPeak, config.store.vuBidirectional, config.store.softapdelay, config.vuRefLevel, config.store.mdnsname,
-          config.ipToStr(WiFi.localIP()), config.store.watchdog, config.store.stallWatchdog, config.store.serialLittlefsEnabled, config.store.nameday,
+          config.ipToStr(WiFi.localIP()), config.store.watchdog, config.store.stallWatchdog, config.store.nameday,
           config.store.clockTtsEnabled, config.store.clockTtsLanguage, static_cast<unsigned int>(config.store.clockTtsIntervalMinutes)
         );
         if (wsPos > 0 && static_cast<size_t>(wsPos) < sizeof(wsBuf)) {
@@ -1595,6 +1597,10 @@ void NetServer::resetQueue() {
 }
 
 void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+  if (fs_api_http::handle_manager_upload_chunk(request, filename, index, data, len, final)) {
+    return;
+  }
+
   static int freeSpace = 0;
   if (request->url() == "/upload") {
     if (!index) {
@@ -1831,6 +1837,9 @@ void handleNotFound(AsyncWebServerRequest *request) {
       return;
     }  // <--post files from /data/www
     if (request->url() == "/upload") {  // <--upload playlist.csv or wifi.csv
+      if (fs_api_http::handle_manager_upload_post(request)) {
+        return;
+      }
       if (request->hasParam("plfile", true, true)) {
         netserver.importRequest = IMPL;
         request->send(200);

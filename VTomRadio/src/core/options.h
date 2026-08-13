@@ -2,7 +2,7 @@
 #    define options_h
 #    pragma once
 
-#    define FW_VERSION "0.1.13"
+#    define FW_VERSION "0.1.14"
 
 #    ifndef THEME_CSV_VERSION
 #        define THEME_CSV_VERSION "0.0.3"
@@ -690,10 +690,9 @@ STORE YOUR SETTINGS IN THE *** myoptions.h *** FILE.
 #endif
 
 /***** Ébresztés / Wakeup *****/
-#if defined(CONFIG_IDF_TARGET_ESP32S3) 
-    // Ha ESP32-S3 vagy S2 chipre fordítunk, akkor létezik az ANY_LOW mód
-    #define EXT1_MODE ESP_EXT1_WAKEUP_ANY_LOW
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(ARDUINO_ESP32_DEV)
+  // Classic ESP32 uses ALL_LOW; newer targets should use ANY_LOW.
+  #define EXT1_MODE ESP_EXT1_WAKEUP_ALL_LOW
 #else
-    // Ha a sima ESP32-re (pl. Wrover, Wroom), ott csak az ALL_LOW érhető el alacsony szinten
-    #define EXT1_MODE ESP_EXT1_WAKEUP_ALL_LOW
+  #define EXT1_MODE ESP_EXT1_WAKEUP_ANY_LOW
 #endif

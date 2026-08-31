@@ -131,26 +131,47 @@ void setup() {
     delay(100);
 
     EEPROM.begin(EEPROM_SIZE);
-    
+
 #if IR_PIN != 255
     irQueue = xQueueCreate(4, sizeof(IRCommand));
     config.eepromRead(EEPROM_START_IR, config.ircodes);
-    irWakeup(); // Megnézi, hogy jó e a kód, és ha igen, akkor ébreszti a rádiót, ha nem, akkor visszaaltatja. 
+    irWakeup(); // Megnézi, hogy jó e a kód, és ha igen, akkor ébreszti a rádiót, ha nem, akkor visszaaltatja.
 #endif
+
 #if PWR_AMP != 255 // "PWR_AMP"
     pinMode(PWR_AMP, OUTPUT);
     digitalWrite(PWR_AMP, HIGH);
 #endif
+
 #if (POWER_LED != 255) // "POWER_LED"
     pinMode(POWER_LED, OUTPUT);
     digitalWrite(POWER_LED, HIGH);
 #endif
+
 #if (BRIGHTNESS_PIN != 255) // backlight plugin
     Serial.printf("Exists? %p\n", &backlightPlugin);
     backlightPluginInit();
 #endif
+
     if (REAL_LEDBUILTIN != 255) pinMode(REAL_LEDBUILTIN, OUTPUT);
     if (radio_on_setup) radio_on_setup();
+
+#if SDC_CS != 255
+    // A CS pin-t OUTPUT-ra állítjuk, és HIGH-ra húzzuk, hogy az SD kártya ne legyen aktív ideiglenesen.
+    // Ez azért fontos, mert az SD kártya és a TFT kijelző ugyanazt az SPI buszt használja, és ha az SD kártya aktív marad, akkor zavarhatja a TFT működését.
+    pinMode(SDC_CS, OUTPUT);
+    digitalWrite(SDC_CS, HIGH);
+    // Ha be van dugva a kártya, az SD.begin() és SD.end() felkészíti az SPI buszra
+    if (SD.begin(SDC_CS, SPI, SDSPISPEED)) {
+        SD.end(); // Ezzel az SD kartya MISO/SPI busza kikapcsol
+        Serial.println("[SETUP] SD card initialized and deactivated.");
+    } else {
+        Serial.println("[SETUP] No SD card or failed to initialize.");
+    }
+    // Again, we ensure that CS is HIGH to prevent the SD card from interfering with the TFT display.
+    digitalWrite(SDC_CS, HIGH);
+#endif
+
     pm.init();     // pluginsManager
     pm.on_setup(); // pluginsManager
     config.init();
@@ -162,9 +183,7 @@ void setup() {
         netserver.begin();
         initControls();
         display.putRequest(DSP_START);
-        while (!display.ready()) {
-            delay(10);
-        }
+        while (!display.ready()) { delay(10); }
         revealDisplayBacklight(true);
         return;
     }
@@ -177,9 +196,7 @@ void setup() {
     initControls();
     hideDisplayBacklight();
     display.putRequest(DSP_START);
-    while (!display.ready()) {
-        delay(10);
-    }
+    while (!display.ready()) { delay(10); }
     revealDisplayBacklight(false);
 #if USE_OTA
     setupOTA();

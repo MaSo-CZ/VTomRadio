@@ -982,6 +982,9 @@ size_t NetServer::chunkedHtmlPageCallback(uint8_t *buffer, size_t maxLen, size_t
     requiredfile = LittleFS.open(netserver.chunkedPathBuffer, "r");
   }
   if (!requiredfile) {
+#ifndef NETSERVER_LOOP1
+    display.unlock();
+#endif
     return 0;
   }
   size_t filesize = requiredfile.size();
@@ -1013,6 +1016,11 @@ void NetServer::chunkedHtmlPage(const String &contentType, AsyncWebServerRequest
   AsyncWebServerResponse *response;
 #ifndef NETSERVER_LOOP1
   display.lock();
+  // Guarantee the lock is released even if the client aborts/disconnects mid-transfer,
+  // since the chunked callback may then never be called again to reach its normal EOF unlock.
+  request->onDisconnect([]() {
+    display.unlock();
+  });
 #endif
   response = request->beginChunkedResponse(contentType, chunkedHtmlPageCallback);
   response->addHeader("Cache-Control", "max-age=31536000");

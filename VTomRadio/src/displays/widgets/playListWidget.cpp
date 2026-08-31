@@ -71,7 +71,7 @@ void PlayListWidget::_prepareMovingModeLayout() {
     _plLastGlobalPos = -1;
     _lastIndex = 0xFFFF;
 
-    Serial.printf("PlayListWidget init (MOVING_CURSOR): dspHeight=%ld, itemHeight=%d, itemsPerPage=%d, yStart=%d\n", dsp.height(), _plItemHeight, _plTtemsCount, _plYStart);
+    //Serial.printf("PlayListWidget init (MOVING_CURSOR): dspHeight=%ld, itemHeight=%d, itemsPerPage=%d, yStart=%d\n", dsp.height(), _plItemHeight, _plTtemsCount, _plYStart);
 }
 
 void PlayListWidget::_prepareFixedModeLayout() {
@@ -137,21 +137,14 @@ void PlayListWidget::_loadPlaylistPage(int pageIndex, int itemsPerPage, int tota
 
         playlist.seek(posAddr, SeekSet);
         String line = playlist.readStringUntil('\n');
-        // Serial.printf("LINE FROM INDEX: '%s'\n", line.c_str());
 
         int tabIdx = line.indexOf('\t');
         if (tabIdx > 0) line = line.substring(0, tabIdx);
         line.trim();
-        //  Serial.printf("PROCESSED LINE: '%s'\n", line.c_str());
-        //   Serial.printf("CONFIG NUMPLAYLIST: %d\n", config.store.numplaylist);
-        //  Serial.printf("CURRENT GLOBAL IDX: %d\n", currentGlobalIdx);
-        //  Serial.printf("LINE LENGTH: %d\n", line.length());
         if (config.store.numplaylist && line.length() > 0) {
             _plCache[i] = String(currentGlobalIdx + 1) + " " + line;
-            //    Serial.printf("CACHED LINE WITH NUMBER: '%s'\n", _plCache[i].c_str());
         } else {
             _plCache[i] = line;
-            //    Serial.printf("CACHED LINE WITHOUT NUMBER: '%s'\n", _plCache[i].c_str());
         }
     }
     playlist.close();
@@ -226,10 +219,12 @@ void PlayListWidget::drawPlaylist(uint16_t currentItem) {
 
             // Minden sor kirajzolása, a kurzorsor kivételével
             _loadDspFont();
+            dsp.startWrite();
             for (int i = 0; i < itemsPerPage; i++) {
                 if (i != newLocalPos) { _printPLitem(i, _plCache[i].c_str(), true); }
                 if (i % 2 == 0) yield();
             }
+            dsp.endWrite();
             dsp.unloadFont();
         } else {
             // --- SMART REDRAW: csak a megváltozott sorok frissítése ---

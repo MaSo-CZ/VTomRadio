@@ -253,7 +253,8 @@ void encodersLoop(myEncoder* enc, bool first) {
             else if (p > cs)
                 p = 1;
             display.currentPlItem = p;
-            display.resetQueue();
+            // putRequest() already coalesces pending DRAWPLAYLIST entries; a full resetQueue()
+            // here would also drop unrelated queued updates (mode/title/IP) on every encoder tick.
             display.putRequest(DRAWPLAYLIST, p);
             config.screensaverTicks = 0;
         }
@@ -664,12 +665,13 @@ void controlsEvent(bool toRight, int8_t volDelta) {
         }
     }
     if (display.mode() == STATIONS) {
-        display.resetQueue();
         int      p = toRight ? display.currentPlItem + 1 : display.currentPlItem - 1;
         uint16_t cs = config.playlistLength();
         if (p < 1) p = cs;
         if (p > cs) p = 1;
         display.currentPlItem = p;
+        // putRequest() already coalesces pending DRAWPLAYLIST entries; a full resetQueue()
+        // here would also drop unrelated queued updates (mode/title/IP) on every step.
         display.putRequest(DRAWPLAYLIST, p);
     }
 }
@@ -735,7 +737,7 @@ void onBtnClick(int id) {
         }
 #ifdef USE_SD
         case EVT_BTNMODE: {
-            config.changeMode();
+            config.changeMode();  // <--- Itt történik az üzemmód váltása
             break;
         }
 #endif
@@ -757,8 +759,8 @@ void onBtnDoubleClick(int id) {
         }
         case EVT_BTNCENTER:
         case EVT_ENCBTNB:
-        case EVT_ENC2BTNB: {
-            onBtnClick(EVT_BTNMODE);
+        case EVT_ENC2BTNB: {  // <--- A 2. encoder gombja (EVT_ENC2BTNB)
+            onBtnClick(EVT_BTNMODE);  // <--- Meghívja a módváltást
             break;
         }
         case EVT_BTNRIGHT: {

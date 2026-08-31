@@ -2,7 +2,7 @@
 #    define options_h
 #    pragma once
 
-#    define FW_VERSION "0.1.14"
+#    define FW_VERSION "0.1.15"
 
 #    ifndef THEME_CSV_VERSION
 #        define THEME_CSV_VERSION "0.0.3"
@@ -143,6 +143,9 @@ STORE YOUR SETTINGS IN THE *** myoptions.h *** FILE.
 #endif
 #if SDC_CS!=255
   #define USE_SD
+#endif
+#ifndef SDSPISPEED
+  #define SDSPISPEED 20000000
 #endif
 /*        ENCODER                 */
 #ifndef ENC_BTNL

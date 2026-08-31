@@ -321,6 +321,12 @@ void Config::changeMode(int newmode) { // DLNA mod
         ESP.restart();
     }
 
+    /* === MÓDOSÍTÁS: A lejátszás MINDIG leáll váltáskor, ha épp futott === */
+    if (pir) {
+        player.sendCommand({PR_STOP, 0});
+        delay(50); // Hagyunk időt a decoder tasknak a tisztességes leállásra
+    }
+
     /* === SD only when explicitly requested === */
     if (newmode == PM_SDCARD) {
         if (!sdman.ready) {
@@ -345,7 +351,7 @@ void Config::changeMode(int newmode) { // DLNA mod
 
     /* === SD specific actions === */
     if (getMode() == PM_SDCARD) {
-        if (pir) { player.sendCommand({PR_STOP, 0}); }
+       // if (pir) { player.sendCommand({PR_STOP, 0}); }
         display.putRequest(NEWMODE, SDCHANGE);
         delay(50);
     } else {
@@ -358,7 +364,7 @@ void Config::changeMode(int newmode) { // DLNA mod
 
     if (pir) {
 #    ifdef USE_DLNA
-        uint16_t st = (getMode() == PM_SDCARD) ? store.lastSdStation : (store.playlistSource == PL_SRC_DLNA ? store.lastDlnaStation : store.lastStation);
+        //  uint16_t st = (getMode() == PM_SDCARD) ? store.lastSdStation : (store.playlistSource == PL_SRC_DLNA ? store.lastDlnaStation : store.lastStation);
 #    else
         uint16_t st = (getMode() == PM_SDCARD) ? store.lastSdStation : store.lastStation;
         player.sendCommand({PR_PLAY, st});
@@ -1518,7 +1524,7 @@ void Config::setVuBidirectional(bool val) {
 
 void Config::setBalance(int8_t balance) {
     saveValue(&store.balance, balance);
-    player.setBalance(store.balance); 
+    player.setBalance(store.balance);
     netserver.requestOnChange(BALANCE, 0);
 }
 
@@ -1978,11 +1984,11 @@ void Config::doSleep() {
 }
 
 void Config::doSleepW() {
-    analogWrite(BRIGHTNESS_PIN, 0);           
-    pinMode(BRIGHTNESS_PIN, OUTPUT);          
-    digitalWrite(BRIGHTNESS_PIN, LOW);        
-    gpio_hold_en((gpio_num_t)BRIGHTNESS_PIN); 
-    gpio_deep_sleep_hold_en();                
+    analogWrite(BRIGHTNESS_PIN, 0);
+    pinMode(BRIGHTNESS_PIN, OUTPUT);
+    digitalWrite(BRIGHTNESS_PIN, LOW);
+    gpio_hold_en((gpio_num_t)BRIGHTNESS_PIN);
+    gpio_deep_sleep_hold_en();
     display.deepsleep();
 
 #ifdef USE_NEXTION

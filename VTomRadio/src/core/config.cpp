@@ -523,6 +523,7 @@ void Config::_initHW() {
 #if BRIGHTNESS_PIN != 255
     gpio_hold_dis((gpio_num_t)BRIGHTNESS_PIN); // ← add (MB)
     pinMode(BRIGHTNESS_PIN, OUTPUT);
+    analogWriteFrequency(BRIGHTNESS_PIN, BRIGHTNESS_PWM_FREQ);
     // Keep backlight off during display controller init to avoid boot flash.
     analogWrite(BRIGHTNESS_PIN, 0);
 #endif

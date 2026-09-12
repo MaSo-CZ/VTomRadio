@@ -318,6 +318,9 @@ STORE YOUR SETTINGS IN THE *** myoptions.h *** FILE.
 #ifndef BRIGHTNESS_PIN
   #define BRIGHTNESS_PIN 255   // BRIGHTNESS Pin
 #endif
+#ifndef BRIGHTNESS_PWM_FREQ
+  #define BRIGHTNESS_PWM_FREQ 1000   // Backlight PWM frequency in Hz
+#endif
 #ifndef PLAYER_FORCE_MONO
   #define PLAYER_FORCE_MONO      false  // mono option - false stereo, true mono
 #endif

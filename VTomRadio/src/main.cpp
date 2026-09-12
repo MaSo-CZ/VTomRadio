@@ -194,10 +194,10 @@ void setup() {
     config.initPlaylistMode();
     netserver.begin();
     initControls();
-    hideDisplayBacklight();
+    hideDisplayBacklight(); // képernyő kikapcsolása
     display.putRequest(DSP_START);
     while (!display.ready()) { delay(10); }
-    revealDisplayBacklight(false);
+    revealDisplayBacklight(false); // képernyő visszakapsolás fokozatosan
 #if USE_OTA
     setupOTA();
 #endif
@@ -205,7 +205,10 @@ void setup() {
     player.lockOutput = false;
     clock_tts_setup();
     startClockTtsTask();
-    if (config.isSmartStartEnabled()) { player.sendCommand({PR_PLAY, config.lastStation()}); }
+    // Smart Start: only mark the intent to start playback, actual start happens in the loop.
+    if (config.isSmartStartEnabled()) {
+        config.pendingSmartStart = true; // Mark the intent to start playback on cold boot
+    }
     Audio::audio_info_callback = my_audio_info; // "audio_change" audiohandlers.h ban kezelve.
     pm.on_end_setup();
 }
@@ -213,6 +216,7 @@ void setup() {
 /*******************************************  LOOP *******************************************/
 void loop() {
     timekeeper.loop1();
+    network.loop();
     if (network.status == CONNECTED || network.status == SDREADY) {
         player.loop();
 #if USE_OTA
@@ -223,4 +227,19 @@ void loop() {
 #ifdef NETSERVER_LOOP1
     netserver.loop();
 #endif
+// COLD BOOT SMART START:
+    if (config.pendingSmartStart) {
+        if (network.status == CONNECTED || config.getMode() == PM_SDCARD) {
+            static unsigned long netReadyMillis = 0;
+            if (netReadyMillis == 0) {
+                netReadyMillis = millis();
+            }
+            // 500mswaiting for the network/amplifier to stabilize:
+            if (millis() - netReadyMillis > 500) {
+                Serial.println("[SMART_START] Network ready, start playback...");
+                player.sendCommand({PR_PLAY, config.lastStation()});
+                config.pendingSmartStart = false; // Kikapcsoljuk a zászlót
+            }
+        }
+    }
 }

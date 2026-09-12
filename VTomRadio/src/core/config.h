@@ -43,7 +43,7 @@
 #    define ESP_ARDUINO_3 1
 #endif
 
-#define CONFIG_VERSION 5
+#define CONFIG_VERSION 6
 
 enum playMode_e : uint8_t { // DLNA mod
     PM_WEB = 0,
@@ -215,6 +215,7 @@ struct config_t {
     bool    clockAmPmStyle;
     bool    rssiAsText;
     int8_t  volumeCurveDb[21]; // step 1..21, dB values in range -60..0
+    int8_t  wifiMinRssi;
 };
 #if IR_PIN != 255
 struct IRCommand {
@@ -285,6 +286,7 @@ class Config {
     char          tmpBuf2[BUFLEN];
     char          ipBuf[16];
     char          _stationBuf[BUFLEN / 2];
+    bool          pendingSmartStart; // Zászló a Smart Start indítási szándék jelzésére
 
   public:
     Config() {};

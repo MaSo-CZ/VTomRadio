@@ -128,8 +128,15 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
 ### Ha támogatni szeretnéd a munkámat itt meghívhatsz egy kávéra!!!     
 <a href="https://buymeacoffee.com/vtom">
     <img src="images/buymeacoffee.png" width="200">
-</a>     
+</a> 
 
+## v0.2.0
+   - Intelligens Wi-Fi hálózatválasztás és automatikus újracsatlakozás implementálva.
+- A minimum jelerősség (wifiMinRssi) beállítása a webes felületen elérhető.
+- Támogatás nyílt (jelszó nélküli) Wi-Fi hálózatokhoz.
+- Bővebben a Wi-Fi beállításokról a következő oldalon olvashatsz: [Doc/wifi.md](Doc/wifi.md)
+- Smart start bizonytalan működésének javítása.    
+Teljes újratelepítés szükséges!!!
 ## v0.1.15
 - SD módból WEB radióra váltásnál fagyás és újraindulási hiba javítása.
 

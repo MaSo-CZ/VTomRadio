@@ -24,6 +24,7 @@ class MyNetwork {
     bool wifiBegin(bool silent=false);
   private:
     void raiseSoftAP();
+    bool wifiBeginWithTimeout(bool silent, uint32_t connectTimeoutMs);
     uint8_t getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t maxCandidates);
     static void WiFiLostConnection(WiFiEvent_t event, WiFiEventInfo_t info);
     static void WiFiReconnected(WiFiEvent_t event, WiFiEventInfo_t info);

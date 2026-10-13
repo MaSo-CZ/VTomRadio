@@ -130,6 +130,12 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
     <img src="images/buymeacoffee.png" width="200">
 </a> 
 
+## v0.2.2
+- Hálózatvesztés esetén az IP cím helyén megjelenik a "Scan WiFi..." üzenet, miközben új hálózatot keres.
+- Kapcsolódás után 5 másodperces váltással jelenik meg az IP cím és az SSID az IP mezőben.
+## v0.2.1
+- Az inteligens hálózatválasztás több időt kapott a csatlakozáshoz, így nem indul feleslegesen AP módban.
+- Az intelligens Wi-Fi indítás soha nem csatlakozik rejtett SSID-khez hiba javítva. https://github.com/VaraiTamas/VTomRadio/issues/18
 ## v0.2.0
    - Intelligens Wi-Fi hálózatválasztás és automatikus újracsatlakozás implementálva.
 - A minimum jelerősség (wifiMinRssi) beállítása a webes felületen elérhető.

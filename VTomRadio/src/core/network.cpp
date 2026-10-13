@@ -12,8 +12,12 @@
 #include "timekeeper.h"
 #include "../pluginsManager/pluginsManager.h"
 
-#ifndef WIFI_ATTEMPTS
-    #define WIFI_ATTEMPTS 16
+#ifndef WIFI_CONNECT_TIMEOUT_MS
+    #define WIFI_CONNECT_TIMEOUT_MS 45000
+#endif
+
+#ifndef WIFI_RECONNECT_TIMEOUT_MS
+    #define WIFI_RECONNECT_TIMEOUT_MS 10000
 #endif
 
 #ifndef SEARCH_WIFI_CORE_ID
@@ -55,7 +59,6 @@ void MyNetwork::WiFiLostConnection(WiFiEvent_t event, WiFiEventInfo_t info) {
         }
         if (config.getMode() == PM_SDCARD) {
             network.status = SDREADY;
-            display.putRequest(NEWIP, 0);
         } else {
             network.lostPlaying = (player.status() == PLAYING || player.isRunning());
             if (network.lostPlaying) {
@@ -65,6 +68,7 @@ void MyNetwork::WiFiLostConnection(WiFiEvent_t event, WiFiEventInfo_t info) {
             display.putRequest(NEWMODE, LOST);
         }
         network.beginReconnect = true;
+        display.putRequest(NEWIP, 0);
         WiFi.reconnect();
     }
 }
@@ -112,17 +116,18 @@ void MyNetwork::loop() {
     // 2. Megszűnt hálózat (Lost connection / Hotspot turned off):
     // Periodically scan and attempt all other saved Wi-Fi networks in wifi.csv.
     if (now - lastScanAttemptMs >= RESCAN_INTERVAL_MS) {
-        lastScanAttemptMs = now;
         scanningOtherNetworks = true;
         Serial.println("[WIFI] Reconnect grace period expired. Scanning for all saved Wi-Fi networks...");
 
-        if (wifiBegin(true)) {
+        const bool reconnected = wifiBeginWithTimeout(true, WIFI_RECONNECT_TIMEOUT_MS);
+        lastScanAttemptMs = millis();
+        if (reconnected) {
             if (config.store.lastSSID > 0 && config.store.lastSSID <= config.ssidsCount) {
                 Serial.printf("[WIFI] Successfully reconnected to %s!\n", config.ssids[config.store.lastSSID - 1].ssid);
             }
             justReconnected = true;
         } else {
-            Serial.println("[WIFI] No saved Wi-Fi network in range. Retrying scan in 12s...");
+            Serial.println("[WIFI] Reconnection attempt failed. Retrying scan in 12s...");
         }
     }
 }
@@ -146,7 +151,22 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
         networks = WiFi.scanComplete();
     }
 
+    bool rejectedByRssi = false;
+
     if (networks > 0) {
+        // Hidden APs report an empty SSID; remember the strongest one
+        int32_t hiddenRssi = -128;
+        bool hiddenSeen = false;
+        for (int networkIndex = 0; networkIndex < networks; ++networkIndex) {
+            if (WiFi.SSID(networkIndex).length() == 0) {
+                int32_t r = WiFi.RSSI(networkIndex);
+                if (!hiddenSeen || r > hiddenRssi) {
+                    hiddenRssi = r;
+                    hiddenSeen = true;
+                }
+            }
+        }
+
         for (uint8_t savedIndex = 0; savedIndex < config.ssidsCount; ++savedIndex) {
             int32_t bestRssiForSsid = -128;
             bool found = false;
@@ -159,7 +179,13 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
                     }
                 }
             }
-            if (found && bestRssiForSsid >= config.store.wifiMinRssi && count < 5) {
+            if (!found && hiddenSeen) {
+                bestRssiForSsid = hiddenRssi;
+                found = true;
+            }
+            if (found && bestRssiForSsid < config.store.wifiMinRssi) {
+                rejectedByRssi = true;
+            } else if (found && count < 5) {
                 candidates[count].index = savedIndex;
                 candidates[count].rssi = bestRssiForSsid;
                 count++;
@@ -181,9 +207,9 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
         WiFi.scanDelete();
     }
 
-    // If scan found nothing or scan failed, fill fallback starting with lastSSID
+    // No candidates: fall back to lastSSID unless networks were seen but too weak
     if (count == 0) {
-        if (networks <= 0) {
+        if (!rejectedByRssi) {
             uint8_t startIdx = (config.store.lastSSID > 0 && config.store.lastSSID <= config.ssidsCount)
                 ? (config.store.lastSSID - 1)
                 : 0;
@@ -220,6 +246,10 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
 }
 
 bool MyNetwork::wifiBegin(bool silent) {
+    return wifiBeginWithTimeout(silent, WIFI_CONNECT_TIMEOUT_MS);
+}
+
+bool MyNetwork::wifiBeginWithTimeout(bool silent, uint32_t connectTimeoutMs) {
     if (config.ssidsCount == 0) return false;
 
     // Hard Reset WiFi before starting
@@ -244,7 +274,6 @@ bool MyNetwork::wifiBegin(bool silent) {
 
     for (uint8_t attempt = 0; attempt < numCandidates; attempt++) {
         uint8_t ls = candidates[attempt];
-        uint8_t errcnt = 0;
 
         if (!silent) {
             Serial.printf("##[BOOT]#\tAttempt to connect to [%d/%d] %s\n", attempt + 1, numCandidates, config.ssids[ls].ssid);
@@ -259,20 +288,20 @@ bool MyNetwork::wifiBegin(bool silent) {
 
         const char* pass = (strlen(config.ssids[ls].password) > 0) ? config.ssids[ls].password : NULL;
         WiFi.begin(config.ssids[ls].ssid, pass);
-        while (WiFi.status() != WL_CONNECTED) {
+        const uint32_t connectStartMs = millis();
+        while (WiFi.status() != WL_CONNECTED && millis() - connectStartMs < connectTimeoutMs) {
             if (!silent) Serial.print(".");
             vTaskDelay(pdMS_TO_TICKS(500));
             if (REAL_LEDBUILTIN != 255 && !silent) digitalWrite(REAL_LEDBUILTIN, !digitalRead(REAL_LEDBUILTIN));
-            errcnt++;
-            if (errcnt > WIFI_ATTEMPTS) {
-                if (!silent) Serial.println();
-                break;
-            }
         }
 
         if (WiFi.status() == WL_CONNECTED) {
             config.setLastSSID(ls + 1);
             return true;
+        }
+        if (!silent) {
+            Serial.printf("\n##[BOOT]#\tTimed out connecting to %s after %lu ms\n",
+                config.ssids[ls].ssid, static_cast<unsigned long>(connectTimeoutMs));
         }
     }
 

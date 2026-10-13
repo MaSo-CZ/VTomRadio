@@ -545,6 +545,10 @@ void Display::invalidateThemeWidgets() {
 }
 
 void Display::loop() {
+    static uint32_t lastNetworkInfoSwitchMs = 0;
+    static bool networkInfoSwitchStarted = false;
+    static bool showSsid = false;
+
     if (_bootStep == 0) {
         _pager->begin();
         _bootScreen();
@@ -684,7 +688,15 @@ void Display::loop() {
 
                 case NEWIP:
 #    ifndef HIDE_IP
-                    if (_ipbox) { _ipbox->setText(config.ipToStr(WiFi.localIP()), iptxtFmt); }
+                    if (_ipbox) {
+                        showSsid = false;
+                        networkInfoSwitchStarted = false;
+                        if (network.beginReconnect) {
+                            _ipbox->setText("WiFi Scan...");
+                        } else {
+                            _ipbox->setText(config.ipToStr(WiFi.localIP()), iptxtFmt);
+                        }
+                    }
 #    endif
                     break;
 
@@ -696,6 +708,28 @@ void Display::loop() {
             }
         }
     }
+
+#    ifndef HIDE_IP
+    if (_ipbox && !network.beginReconnect && WiFi.status() == WL_CONNECTED) {
+        const uint32_t now = millis();
+        if (!networkInfoSwitchStarted) {
+            lastNetworkInfoSwitchMs = now;
+            networkInfoSwitchStarted = true;
+        } else if (now - lastNetworkInfoSwitchMs >= 5000) {
+            lastNetworkInfoSwitchMs = now;
+            showSsid = !showSsid;
+            if (showSsid) {
+                String ssid = WiFi.SSID();
+                _ipbox->setText(ssid.c_str());
+            } else {
+                _ipbox->setText(config.ipToStr(WiFi.localIP()), iptxtFmt);
+            }
+        }
+    } else {
+        networkInfoSwitchStarted = false;
+        showSsid = false;
+    }
+#    endif
 
     dsp.loop();
 } // loop vége

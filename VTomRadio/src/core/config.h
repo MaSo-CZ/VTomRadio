@@ -45,6 +45,8 @@
 
 #define CONFIG_VERSION 6
 
+enum inputSource_e : uint8_t;
+
 enum playMode_e : uint8_t { // DLNA mod
     PM_WEB = 0,
     PM_SDCARD = 1,
@@ -340,6 +342,7 @@ class Config {
 #endif
     void     initSDPlaylist();
     void     changeMode(int newmode = -1);
+    bool     selectInput(inputSource_e source);
     uint16_t playlistLength();
     uint16_t lastStation() {
 #ifdef USE_SD
@@ -376,6 +379,13 @@ class Config {
     void     doSleepW();
     void     setSnuffle(bool sn);
     uint8_t  getMode() { return store.play_mode /* & 0b11*/; }
+    bool     isDlnaMode() {
+#ifdef USE_DLNA
+        return getMode() == PM_WEB && store.playlistSource == PL_SRC_DLNA;
+#else
+        return false;
+#endif
+    }
     void     initPlaylistMode();
     void     reset();
     void     enableScreensaver(bool val);

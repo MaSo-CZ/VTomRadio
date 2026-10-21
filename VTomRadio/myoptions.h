@@ -129,6 +129,7 @@ Supported languages: HU, PL, NL, GR, DE, CZ, SK (UA Local/namedays/namedays_UA.h
 /*----- SD CARD -----*/
  #define SDC_CS     18
  #define SD_SPIPINS 12, 13, 11, SDC_CS  // SCK, MISO, MOSI, CS
+ #define SDSPISPEED 10000000
 
 /*----- Ezzel a beállítással nincs görgetés az időjárás sávon. -----*/
 /*----- With this setting there is no scrolling on the weather bar. -----*/

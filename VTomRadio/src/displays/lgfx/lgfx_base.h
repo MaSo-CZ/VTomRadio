@@ -58,7 +58,12 @@ class LGFX_Base : public lgfx::LGFX_Device {
     applySpiHost(cfg);
     cfg.pin_sclk = 12;
     cfg.pin_mosi = 11;
-    cfg.pin_miso = 13;  
+#if TS_MODEL == TS_MODEL_XPT2046
+    cfg.pin_miso = 13;
+#else
+    // A kijelző MISO-ja nincs bekötve; a 13-as lábat az SD kártya használja, ezért a kijelző busz ne olvassa.
+    cfg.pin_miso = -1;
+#endif
     cfg.use_lock = true;
     cfg.pin_dc = TFT_DC;
     cfg.freq_write = LGFX_LCD_FREQ_WRITE;

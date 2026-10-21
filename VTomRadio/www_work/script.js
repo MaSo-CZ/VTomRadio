@@ -1,5 +1,9 @@
 var hostname = window.location.hostname;
 var modesd = false;
+var modedlna = false;
+var playlistTimer = null;
+var lastPlaylistLoad = 0;
+var currentSource = 'web';
 const query = window.location.search;
 const params = new URLSearchParams(query);
 const yoTitle = 'VTom Radio';
@@ -113,18 +117,36 @@ function onMessage(event) {
       setTimeout(function(){ window.location.href=data.redirect; }, 4000);
       return;
     }
-    if(typeof data.playermode !== 'undefined') { //Web, SD
+    if(typeof data.playermode !== 'undefined') { //Web, SD, DLNA
+      const prevSource = currentSource;
       modesd = data.playermode=='modesd';
-      classEach('modeitem', function(el){ el.classList.add('hidden') });
-      if(modesd) showById(['modesd', 'sdsvg'],['plsvg']); else showById(['modeweb','plsvg','bitinfo'],['sdsvg','snuffle']);
+      modedlna = data.playermode=='modedlna';
+      setSourceButtons(data.playermode);
+      if(modesd || modedlna) showById(['bitinfo'],['snuffle']);
+      else showById(['bitinfo'],['timelinesvg','soundsvg','snuffle']);
+      getId('toggleplaylist').classList.toggle('hidden', !(modesd || modedlna));
+      getId('editplaylist').classList.toggle('hidden', modesd);
       showById(['volslider'],['sdslider']);
-      getId('toggleplaylist').classList.remove('active');
-      generatePlaylist(`http://${hostname}/data/playlist.csv`+"?"+new Date().getTime());
+      updateToggleIcon();
+      getId('editplaylist').classList.remove('active');
+      getId('pleditorwrap').classList.add('hidden');
+      getId('plsvg').classList.remove('hidden');
+      getId('editbacksvg').classList.add('hidden');
+      // Repeated playermode messages arrive in bursts; load the playlist once.
+      if(playlistTimer) clearTimeout(playlistTimer);
+      if(prevSource!=currentSource || Date.now()-lastPlaylistLoad>2000){
+        playlistTimer = setTimeout(function(){
+          playlistTimer = null;
+          generatePlaylist(`http://${hostname}/data/playlist.csv`+"?"+new Date().getTime());
+        }, 250);
+      }
       // Add hiding elements with modeweb class in SD mode
       classEach('modeweb', function(el){ el.classList.toggle('hidden', modesd); });
+      getId('searchradio').classList.toggle('hidden', modesd || modedlna);
       return;
     }
     if(typeof data.sdinit !== 'undefined') {
+      getId('src-sd').classList.toggle('hidden', data.sdinit!=1);
       if(data.sdinit==1) {
         getId('playernav').classList.add("sd");
         getId('volmbutton').classList.add("hidden");
@@ -381,6 +403,7 @@ function annotatePlaylistWithGenres(){
   });
 }
 function generatePlaylist(path){
+  lastPlaylistLoad = Date.now();
   getId('playlist').innerHTML='<div id="progress"><span id="loader"></span></div>';
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
@@ -466,6 +489,13 @@ function doPlUpload(finput) {
   xhr.send(formData);
   finput.value = '';
 }
+function updateToggleIcon(){
+  if(!(modesd || modedlna)) return;
+  const timelineVisible = !getId('sdslider').classList.contains('hidden');
+  // The button shows the view it switches to
+  getId('timelinesvg').classList.toggle('hidden', timelineVisible);
+  getId('soundsvg').classList.toggle('hidden', !timelineVisible);
+}
 function toggleTarget(el, id){
   const target = getId(id);
   if(id=='pleditorwrap'){
@@ -473,14 +503,23 @@ function toggleTarget(el, id){
     audiopreview.src='';
     getId('previewinfo').innerHTML='';
   }
+  if(id=='sliderswap'){
+    getId('sdslider').classList.toggle('hidden');
+    getId('volslider').classList.toggle('hidden');
+    getId('bitinfo').classList.toggle('hidden');
+    if(modesd) getId('snuffle').classList.toggle('hidden');
+    updateToggleIcon();
+    return;
+  }
   if(target){
-    if(id=='pleditorwrap' && modesd) {
-      getId('sdslider').classList.toggle('hidden');
-      getId('volslider').classList.toggle('hidden');
-      getId('bitinfo').classList.toggle('hidden');
-      getId('snuffle').classList.toggle('hidden');
-    }else target.classList.toggle("hidden");
-    getId(target.dataset.target).classList.toggle("active");
+    target.classList.toggle("hidden");
+    if(id!='pleditorwrap') getId(target.dataset.target).classList.toggle("active");
+    if(id=='pleditorwrap'){
+      const editing = !target.classList.contains('hidden');
+      getId('plsvg').classList.toggle('hidden', editing);
+      getId('editbacksvg').classList.toggle('hidden', !editing);
+      if(modedlna) getId('toggleplaylist').classList.toggle('hidden', editing);
+    }
   }
 }
 function checkboxClick(cb, command){
@@ -739,13 +778,32 @@ function hideSpinner(){
   getId("progress").classList.add("hidden");
   getId("content").classList.remove("hidden");
 }
-function changeMode(el){
-  const cmd = el.dataset.command;
-  //setPlaylistMod();
-  el.classList.add('hidden');
-  if(cmd=='web') getId('modesd').classList.remove('hidden');
-  else getId('modeweb').classList.remove('hidden');
-  wsSend("newmode="+(cmd=="web"?0:1));
+function setSourceButtons(mode){
+  currentSource = mode=='modesd' ? 'sd' : (mode=='modedlna' ? 'dlna' : 'web');
+  ['web','sd','dlna'].forEach(s=>{
+    const b = getId('src-'+s);
+    if(b) b.classList.toggle('active', s==currentSource);
+  });
+}
+async function switchSource(src){
+  const dlnaOk = typeof dlnaSupported !== 'undefined' && dlnaSupported;
+  if(src=='sd'){
+    if(currentSource!='sd') wsSend("newmode=1");
+  }else if(src=='dlna'){
+    if(!dlnaOk) return;
+    if(currentSource=='dlna'){ window.location.href='dlna.html'; return; }
+    let exists = false;
+    try{
+      const r = await fetch(`/data/playlist_dlna.csv?${Date.now()}`, {cache:'no-store'});
+      exists = r.ok && (await r.text()).trim().length > 0;
+    }catch(e){}
+    if(exists) fetch('/playlist/dlna', {cache:'no-store'});
+    else window.location.href='dlna.html';
+  }else if(src=='web'){
+    if(currentSource=='web') return;
+    if(dlnaOk) fetch('/playlist/web', {cache:'no-store'});
+    else wsSend("newmode=0");
+  }
 }
 function toggleSnuffle(){
   let el = getId('snuffle');
@@ -792,14 +850,9 @@ function continueLoading(mode){
           generatePlaylist(`http://${hostname}/data/playlist.csv` + "?" + new Date().getTime());
           populateBankSelect();
 		  //DLNA mod
-			const dlnaBtn = document.getElementById('dlnabtn');
-			if (dlnaBtn) {
-			  if (typeof dlnaSupported !== 'undefined' && !dlnaSupported) {
-				dlnaBtn.classList.add('hidden');
-			  } else {
-				dlnaBtn.addEventListener('click', openDlna);
-				dlnaBtn.classList.remove('hidden');
-			  }
+			const dlnaBtn = document.getElementById('src-dlna');
+			if (dlnaBtn && typeof dlnaSupported !== 'undefined' && !dlnaSupported) {
+			  dlnaBtn.classList.add('hidden');
 			}
         });
         getId("version").innerText=` | v${fwVersion}`;
@@ -997,6 +1050,7 @@ function continueLoading(mode){
           case "format": wsSend("format=1"); rebootSystem('Format SPIFFS. Rebooting...'); break;
           case "reset":  wsSend("reset=1");  rebootSystem('Reset settings. Rebooting...'); break;
           case "snuffle": toggleSnuffle(); break;
+          case "source": switchSource(target.dataset.source); break;
           case "rebootmdns": wsSend(`mdnsname=${getId('mdns').value}`); wsSend("rebootmdns=1"); break;
           default: break;
         }
@@ -1026,7 +1080,6 @@ function continueLoading(mode){
             wsSend(`${command}=1`);
           }
         }
-        if(target.classList.contains("modeitem")) changeMode(target);
         if(target.hasClass("pleplay")) playPreview(target.parentElement);
         if(target.classList.contains("play")){ // A lejátszás indítása.
           const item = target.attr('attr-id');

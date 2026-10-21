@@ -104,6 +104,7 @@ void PlayListWidget::_prepareFixedModeLayout() {
 void PlayListWidget::init(ScrollWidget* current) {
     Widget::init({0, 0, 0, WA_LEFT}, 0, 0);
     _currentScroll = current;
+    _cacheBaseIdx = -1; // a lista közben változhatott, friss cache kell
 
     _lastMovingMode = config.store.playlistMovingCursor;
 
@@ -309,7 +310,8 @@ void PlayListWidget::_printPLitem(uint8_t pos, const char* item, bool usePreload
 
 void PlayListWidget::_updateNameCache(int centerIdx) {
     // Csak akkor frissítünk, ha elmozdultunk a korábbi cache közepétől
-    if (_cacheBaseIdx != -1 && abs(centerIdx - _cacheBaseIdx) < 4) return;
+    // A cache a középponttól ±7 elemet fed le, a látható oldalsorok (_sideRows) is bele kell férjenek.
+    if (_cacheBaseIdx != -1 && abs(centerIdx - _cacheBaseIdx) + (int)_sideRows <= 7) return;
 
     _cacheBaseIdx = centerIdx;
 
@@ -352,7 +354,8 @@ void PlayListWidget::_updateNameCache(int centerIdx) {
 String PlayListWidget::_getCachedName(int index) {
     int cachePos = index - (_cacheBaseIdx - 7);
     if (cachePos >= 0 && cachePos < 15) { return _nameCache[cachePos]; }
-    return _fetchStationName(index); // Biztonsági tartalék
+    // Nem olvasunk fájlt (SD/SPI), mert ezt a kijelző startWrite() alatt is hívja -> SPI holtpont.
+    return "";
 }
 
 void PlayListWidget::_renderStaticList(uint16_t centerIdx) {

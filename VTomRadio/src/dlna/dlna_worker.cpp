@@ -93,6 +93,68 @@ static inline void worker_yield() {
   vTaskDelay(1); // 1 tick yield
 }
 
+// ===== Aszinkron list állapot =====
+static SemaphoreHandle_t s_listMux = nullptr;
+static String   s_listJson;
+static uint32_t s_listReq = 0;
+static int      s_listState = 0;   // 0 nincs, 1 folyamatban, 2 kész, 3 hiba
+static uint32_t s_listSubmitMs = 0;
+
+bool dlna_list_submit(const char* objectId, uint32_t start, uint32_t reqId) {
+  if (!s_listMux || !g_dlnaQueue) return false;
+  if (xSemaphoreTake(s_listMux, pdMS_TO_TICKS(100)) != pdTRUE) return false;
+
+  // elakadt (15 s-nél régebbi) kérést nem tekintünk foglaltnak
+  if (s_listState == 1 && millis() - s_listSubmitMs < 15000) {
+    xSemaphoreGive(s_listMux);
+    return false;
+  }
+
+  DlnaJob j{};
+  j.type = DJ_LIST;
+  strlcpy(j.objectId, objectId, sizeof(j.objectId));
+  j.reqId = reqId;
+  j.start = start;
+
+  s_listJson = "";
+  s_listReq = reqId;
+  s_listState = 1;
+  s_listSubmitMs = millis();
+
+  bool ok = xQueueSend(g_dlnaQueue, &j, 0) == pdTRUE;
+  if (!ok) s_listState = 0;
+  xSemaphoreGive(s_listMux);
+  return ok;
+}
+
+int dlna_list_result(uint32_t reqId, String& out) {
+  if (!s_listMux) return -2;
+  if (xSemaphoreTake(s_listMux, pdMS_TO_TICKS(100)) != pdTRUE) return 0;
+
+  int rc;
+  if (s_listReq != reqId || s_listState == 0) {
+    rc = -2;
+  } else if (s_listState == 1) {
+    rc = (millis() - s_listSubmitMs > 15000) ? -1 : 0;
+  } else if (s_listState == 2) {
+    out = s_listJson;
+    rc = 1;
+  } else {
+    rc = -1;
+  }
+  xSemaphoreGive(s_listMux);
+  return rc;
+}
+
+static void list_finish(uint32_t reqId, bool ok, String& json) {
+  if (xSemaphoreTake(s_listMux, portMAX_DELAY) != pdTRUE) return;
+  if (s_listReq == reqId) {
+    s_listJson = ok ? json : String();
+    s_listState = ok ? 2 : 3;
+  }
+  xSemaphoreGive(s_listMux);
+}
+
 static void dlna_worker_task(void* ) {
   //esp_task_wdt_add(nullptr); // add current task to WDT (ha használod)
   DlnaJob j{};
@@ -107,6 +169,19 @@ static void dlna_worker_task(void* ) {
       continue;
     }
 
+    if (j.type == DJ_LIST) {
+      String json;
+      bool lok = false;
+      const String ctlUrl = dlnaGetControlUrl();
+      if (ctlUrl.length()) {
+        DlnaIndex idx;
+        lok = idx.listContainer(ctlUrl, String(j.objectId), json, j.start);
+      }
+      list_finish(j.reqId, lok, json);
+      worker_yield();
+      continue;
+    }
+
     dlna_status_setBusy(j, "working");
 
     bool ok = false;
@@ -116,7 +191,8 @@ static void dlna_worker_task(void* ) {
     if (j.type == DJ_BUILD) {
       dlna_status_setBusy(j, "build");
 
-      if (!g_dlnaControlUrl.length()) {
+      const String ctlUrl = dlnaGetControlUrl();
+      if (!ctlUrl.length()) {
         dlna_status_setDone(j, false, 503, "DLNA not initialized");
         continue;
       }
@@ -124,7 +200,7 @@ static void dlna_worker_task(void* ) {
       DlnaIndex idx;
       bool hasItems = false, hasContainers = false;
 
-      ok = idx.browseAndDecide(g_dlnaControlUrl, j.objectId, hasItems, hasContainers);
+      ok = idx.browseAndDecide(ctlUrl, j.objectId, hasItems, hasContainers);
 
       
       if (!ok) {
@@ -145,7 +221,7 @@ static void dlna_worker_task(void* ) {
       uint32_t limit = j.hardLimit ? j.hardLimit : 20000;
 
       ok = idx.autoBuildPlaylist(
-             g_dlnaControlUrl,
+             ctlUrl,
              j.objectId,
              depth,
              limit    // ha nincs: add meg defaultnak
@@ -180,7 +256,8 @@ static void dlna_worker_task(void* ) {
     else if (j.type == DJ_APPEND) {
       dlna_status_setBusy(j, "append");
 
-      if (!g_dlnaControlUrl.length()) {
+      const String ctlUrl = dlnaGetControlUrl();
+      if (!ctlUrl.length()) {
         dlna_status_setDone(j, false, 503, "DLNA not initialized");
         continue;
       }
@@ -188,7 +265,7 @@ static void dlna_worker_task(void* ) {
       DlnaIndex idx;
       bool hasItems = false, hasContainers = false;
 
-      ok = idx.browseAndDecide(g_dlnaControlUrl, j.objectId, hasItems, hasContainers);
+      ok = idx.browseAndDecide(ctlUrl, j.objectId, hasItems, hasContainers);
       if (!ok) {
         dlna_status_setDone(j, false, 500, "browse failed");
         continue;
@@ -207,7 +284,7 @@ static void dlna_worker_task(void* ) {
       uint32_t limit = j.hardLimit ? j.hardLimit : 20000;
 
       ok = idx.autoBuildPlaylist(
-             g_dlnaControlUrl,
+             ctlUrl,
              j.objectId,
              depth,
              limit
@@ -277,6 +354,7 @@ void dlna_worker_start() {
 	  g_dlnaHttpMux = xSemaphoreCreateMutex();
 	  Serial.println("[DLNA] HTTP mutex created");}
   if (!g_littlefsMux) g_littlefsMux = xSemaphoreCreateMutex();
+  if (!s_listMux) s_listMux = xSemaphoreCreateMutex();
   if (!g_dlnaQueue) g_dlnaQueue = xQueueCreate(6, sizeof(DlnaJob));
 
   BaseType_t ok = xTaskCreatePinnedToCore(
@@ -298,8 +376,8 @@ void dlna_worker_start() {
 }
 
 
-void dlna_worker_enqueue(const DlnaJob& j) {
-  if (!g_dlnaQueue) return;
-  xQueueSend(g_dlnaQueue, &j, 0);
+bool dlna_worker_enqueue(const DlnaJob& j) {
+  if (!g_dlnaQueue) return false;
+  return xQueueSend(g_dlnaQueue, &j, 0) == pdTRUE;
 }
 #endif   // USE_DLNA

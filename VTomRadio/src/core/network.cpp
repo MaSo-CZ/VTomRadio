@@ -17,7 +17,7 @@
 #endif
 
 #ifndef WIFI_RECONNECT_TIMEOUT_MS
-    #define WIFI_RECONNECT_TIMEOUT_MS 10000
+    #define WIFI_RECONNECT_TIMEOUT_MS 45000
 #endif
 
 #ifndef SEARCH_WIFI_CORE_ID
@@ -59,17 +59,12 @@ void MyNetwork::WiFiLostConnection(WiFiEvent_t event, WiFiEventInfo_t info) {
         }
         if (config.getMode() == PM_SDCARD) {
             network.status = SDREADY;
+            WiFi.reconnect();
         } else {
-            network.lostPlaying = (player.status() == PLAYING || player.isRunning());
-            if (network.lostPlaying) {
-                player.lockOutput = true;
-                player.sendCommand({PR_STOP, 0});
-            }
-            display.putRequest(NEWMODE, LOST);
+            network.lostEventPending = true;
         }
         network.beginReconnect = true;
-        display.putRequest(NEWIP, 0);
-        WiFi.reconnect();
+        if (!network.lostEventPending) display.putRequest(NEWIP, 0);
     }
 }
 
@@ -77,48 +72,105 @@ void MyNetwork::loop() {
     if (justReconnected) {
         justReconnected = false;
         beginReconnect = false;
+        weakSignalReconnect = false;
         scanningOtherNetworks = false;
         status = CONNECTED;
         player.lockOutput = false;
         setWifiParams();
         display.putRequest(NEWMODE, PLAYER);
         display.putRequest(NEWIP, 0);
-        if (config.getMode() != PM_SDCARD) {
-            if (lostPlaying) {
-                lostPlaying = false;
-                player.sendCommand({PR_PLAY, config.lastStation()});
-            }
-        }
 #ifdef MQTT_ROOT_TOPIC
         connectToMqtt();
 #endif
-        return;
+    }
+
+    if (lostEventPending) {
+        lostEventPending = false;
+        lostPlaying = (player.status() == PLAYING || player.isRunning());
+        if (lostPlaying) {
+            player.lockOutput = true;
+            player.resetQueue();
+            player.sendCommandFirst({PR_STOP, 0});
+            player.loop();
+        }
+        display.putRequest(NEWMODE, LOST);
+        display.putRequest(NEWIP, 0);
+        WiFi.reconnect();
+    }
+
+    if (lostPlaying && status == CONNECTED && !beginReconnect && WiFi.status() == WL_CONNECTED
+        && config.getMode() != PM_SDCARD) {
+        if (player.status() == PLAYING || player.isRunning()) {
+            lostPlaying = false;
+            resumeQueueWarningLogged = false;
+        } else if (player.sendCommand({PR_PLAY, config.lastStation()})) {
+            lostPlaying = false;
+            resumeQueueWarningLogged = false;
+        } else if (!resumeQueueWarningLogged) {
+            Serial.println("[WIFI] Could not queue playback resume; will retry.");
+            resumeQueueWarningLogged = true;
+        }
+    }
+
+    constexpr uint32_t RSSI_CHECK_INTERVAL_MS = 5000;
+    constexpr uint32_t WEAK_SIGNAL_RESCAN_INTERVAL_MS = 60000;
+    static uint32_t lastRssiCheckMs = 0;
+    uint32_t now = millis();
+
+    if (!beginReconnect && status == CONNECTED && WiFi.status() == WL_CONNECTED
+        && now - lastRssiCheckMs >= RSSI_CHECK_INTERVAL_MS) {
+        lastRssiCheckMs = now;
+        const int32_t currentRssi = WiFi.RSSI();
+        if (currentRssi < config.store.wifiMinRssi
+            && (lastWeakSignalScanMs == 0 || now - lastWeakSignalScanMs >= WEAK_SIGNAL_RESCAN_INTERVAL_MS)) {
+            Serial.printf("[WIFI] Signal at %ld dBm is below the %d dBm threshold; scanning saved networks...\n",
+                static_cast<long>(currentRssi), config.store.wifiMinRssi);
+            lastWeakSignalScanMs = now;
+            weakSignalReconnect = true;
+            beginReconnect = true;
+            disconnectStartMs = now;
+            lastScanAttemptMs = now;
+            scanningOtherNetworks = true;
+            lostPlaying = (player.status() == PLAYING || player.isRunning());
+            if (lostPlaying) {
+                player.lockOutput = true;
+                player.resetQueue();
+                player.sendCommandFirst({PR_STOP, 0});
+                player.loop();
+            }
+            if (config.getMode() != PM_SDCARD) display.putRequest(NEWMODE, LOST);
+            display.putRequest(NEWIP, 0);
+            WiFi.disconnect(true);
+        }
     }
 
     if (!beginReconnect) return;
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (!weakSignalReconnect && WiFi.status() == WL_CONNECTED) {
         justReconnected = true;
         return;
     }
 
-    uint32_t now = millis();
+    now = millis();
 
     // 1. Szakadozó hálózat (Flaky connection):
     // Give 15s grace period for fast auto-reconnect to the same SSID.
     constexpr uint32_t GRACE_PERIOD_MS = 13000;
     constexpr uint32_t RESCAN_INTERVAL_MS = 12000;
 
-    if (now - disconnectStartMs < GRACE_PERIOD_MS) {
+    if (!weakSignalReconnect && now - disconnectStartMs < GRACE_PERIOD_MS) {
         return;
     }
 
     // 2. Megszűnt hálózat (Lost connection / Hotspot turned off):
     // Periodically scan and attempt all other saved Wi-Fi networks in wifi.csv.
-    if (now - lastScanAttemptMs >= RESCAN_INTERVAL_MS) {
+    if (weakSignalReconnect || now - lastScanAttemptMs >= RESCAN_INTERVAL_MS) {
         scanningOtherNetworks = true;
-        Serial.println("[WIFI] Reconnect grace period expired. Scanning for all saved Wi-Fi networks...");
+        if (!weakSignalReconnect) {
+            Serial.println("[WIFI] Reconnect grace period expired. Scanning for all saved Wi-Fi networks...");
+        }
 
+        weakSignalReconnect = false;
         const bool reconnected = wifiBeginWithTimeout(true, WIFI_RECONNECT_TIMEOUT_MS);
         lastScanAttemptMs = millis();
         if (reconnected) {
@@ -151,8 +203,6 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
         networks = WiFi.scanComplete();
     }
 
-    bool rejectedByRssi = false;
-
     if (networks > 0) {
         // Hidden APs report an empty SSID; remember the strongest one
         int32_t hiddenRssi = -128;
@@ -183,9 +233,7 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
                 bestRssiForSsid = hiddenRssi;
                 found = true;
             }
-            if (found && bestRssiForSsid < config.store.wifiMinRssi) {
-                rejectedByRssi = true;
-            } else if (found && count < 5) {
+            if (found && count < 5) {
                 candidates[count].index = savedIndex;
                 candidates[count].rssi = bestRssiForSsid;
                 count++;
@@ -207,39 +255,25 @@ uint8_t MyNetwork::getSortedSavedWifiCandidates(uint8_t* outCandidates, uint8_t 
         WiFi.scanDelete();
     }
 
-    // No candidates: fall back to lastSSID unless networks were seen but too weak
+    // If the scan was inconclusive, fall back to the saved list starting at lastSSID.
     if (count == 0) {
-        if (!rejectedByRssi) {
-            uint8_t startIdx = (config.store.lastSSID > 0 && config.store.lastSSID <= config.ssidsCount)
-                ? (config.store.lastSSID - 1)
-                : 0;
-            for (uint8_t i = 0; i < config.ssidsCount && count < maxCandidates; i++) {
-                uint8_t idx = (startIdx + i) % config.ssidsCount;
-                outCandidates[count++] = idx;
-            }
-            return count;
-        } else {
-            return 0;
+        if (networks >= 0) {
+            WiFi.scanDelete();
+          //  return 0;
         }
+        uint8_t startIdx = (config.store.lastSSID > 0 && config.store.lastSSID <= config.ssidsCount)
+            ? (config.store.lastSSID - 1)
+            : 0;
+        for (uint8_t i = 0; i < config.ssidsCount && count < maxCandidates; i++) {
+            uint8_t idx = (startIdx + i) % config.ssidsCount;
+            outCandidates[count++] = idx;
+        }
+        return count;
     }
 
     uint8_t retCount = 0;
     for (uint8_t i = 0; i < count && retCount < maxCandidates; i++) {
         outCandidates[retCount++] = candidates[i].index;
-    }
-
-    // Append any remaining saved SSIDs not found in scan as last resort
-    for (uint8_t s = 0; s < config.ssidsCount && retCount < maxCandidates; s++) {
-        bool alreadyIn = false;
-        for (uint8_t c = 0; c < retCount; c++) {
-            if (outCandidates[c] == s) {
-                alreadyIn = true;
-                break;
-            }
-        }
-        if (!alreadyIn) {
-            outCandidates[retCount++] = s;
-        }
     }
 
     return retCount;

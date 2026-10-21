@@ -13,6 +13,10 @@ class MyNetwork {
     volatile bool justReconnected = false;
     uint32_t disconnectStartMs = 0;
     uint32_t lastScanAttemptMs = 0;
+    uint32_t lastWeakSignalScanMs = 0;
+    bool weakSignalReconnect = false;
+    volatile bool lostEventPending = false;
+    bool resumeQueueWarningLogged = false;
     bool scanningOtherNetworks = false;
   public:
     MyNetwork() {};

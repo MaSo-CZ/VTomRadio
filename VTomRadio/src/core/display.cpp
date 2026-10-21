@@ -5,6 +5,7 @@
 #include "config.h"
 #include "display.h"
 #include "presets.h"
+#include "inputselect.h"
 #include "player.h"
 #include "network.h"
 #include "netserver.h"
@@ -99,7 +100,7 @@ void Display::_createDspTask() {
 //============================================================================================================================
 DspCore dsp;
 
-Page* pages[] = {new Page(), new Page(), new Page(), new Page(), new Page()}; // "presets" +1 page
+Page* pages[] = {new Page(), new Page(), new Page(), new Page(), new Page(), new Page()};
 
 #    if !((DSP_MODEL == DSP_ST7735 && DTYPE == INITR_BLACKTAB) || DSP_MODEL == DSP_ST7789 || DSP_MODEL == DSP_ST7796 || DSP_MODEL == DSP_ILI9488 || DSP_MODEL == DSP_ILI9486 || \
           DSP_MODEL == DSP_ILI9341 || DSP_MODEL == DSP_ILI9225 || DSP_MODEL == DSP_ST7789_170 || DSP_MODEL == DSP_SSD1322)
@@ -460,6 +461,14 @@ void Display::_swichMode(displayMode_e newmode) {
         presets_drawScreen();
     }
 #    endif
+    if (newmode == INPUTSELECT) {
+        inputSelectIndex = config.getMode() == PM_SDCARD ? INPUT_SD : config.isDlnaMode() ? INPUT_DLNA : INPUT_WEB;
+        inputSelectIndex = inputSelect_normalizeSelection(inputSelectIndex);
+        resetQueue();
+        _pager->setPage(pages[PG_INPUTSELECT], true);
+        inputSelect_drawScreen(inputSelectIndex);
+        timekeeper.waitAndReturnPlayer(config.store.stationsListReturnTime);
+    }
     if (newmode == STATIONS) {
         _refreshThemeColors();
         // Drop stale player-mode draw requests so they cannot paint one extra old frame.
@@ -504,6 +513,7 @@ void Display::putRequest(displayRequestType_e type, int payload) {
         case AUDIOINFO:
         case DSPRSSI:
         case DRAWVOL:
+        case DRAWINPUTSELECT:
             purgeQueuedRequestType(type);
             break;
         default:
@@ -575,7 +585,7 @@ void Display::loop() {
                 } break;
 
                 case CLOCK:
-                    if (_mode == PLAYER || _mode == SCREENSAVER) { _time(request.payload == 1); }
+                    if (_mode == PLAYER || _mode == SCREENSAVER || _mode == LOST) { _time(request.payload == 1); }
                     /*#ifdef USE_NEXTION
   if(_mode==TIMEZONE) nextion.localTime(network.timeinfo);
   if(_mode==INFO)     nextion.rssi();
@@ -588,6 +598,9 @@ void Display::loop() {
                     if (_mode == NUMBERS) { _drawNextStationNum(request.payload); }
                     break;
                 case DRAWPLAYLIST: _drawPlaylist(); break;
+                case DRAWINPUTSELECT:
+                    if (_mode == INPUTSELECT) { inputSelect_drawScreen(inputSelectIndex); }
+                    break;
                 case DRAWVOL: _volume(); break;
 
                 case DBITRATE: {
@@ -734,6 +747,13 @@ void Display::loop() {
     dsp.loop();
 } // loop vége
 
+void Display::moveInputSelect(int delta) {
+    if (_mode != INPUTSELECT || delta == 0) { return; }
+    inputSelectIndex = inputSelect_moveSelection(inputSelect_normalizeSelection(inputSelectIndex), delta);
+    putRequest(DRAWINPUTSELECT, inputSelectIndex);
+    timekeeper.waitAndReturnPlayer(config.store.stationsListReturnTime);
+}
+
 void Display::_setRSSI(int rssi) {
     if (config.store.rssiAsText && _rssibox) {
         _rssibox->setText(rssi, "%ddBm");
@@ -858,6 +878,7 @@ void Display::setContrast() {}
 bool Display::deepsleep() {
 #    if defined(DSP_OLED) || BRIGHTNESS_PIN != 255
     dsp.sleep();
+    _panelAsleep = true;
     return true;
 #    endif
     return false;
@@ -865,6 +886,9 @@ bool Display::deepsleep() {
 
 void Display::wakeup() {
 #    if defined(DSP_OLED) || BRIGHTNESS_PIN != 255
+    // Re-sending SLPOUT/DISPON to an awake panel can disturb its state and stalls the display task.
+    if (!_panelAsleep) { return; }
+    _panelAsleep = false;
     dsp.wake();
 #    endif
 }

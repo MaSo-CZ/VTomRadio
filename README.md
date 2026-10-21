@@ -130,6 +130,12 @@ Itt olvashatsz róla bővebben: [PCB_2026_06_21](PCB/PCB_2026_06_21/readme.md)
     <img src="images/buymeacoffee.png" width="200">
 </a> 
 
+## v0.2.3
+- Új funkció. Az enkoder dupla kattintásra a forrásválasztás menüből történik és a WEB UI-ban is elérhető.
+- Az intelligens hálózatválasztás továbbfejlesztve, stabilabb csatlakozás érhető el.
+- DLNA kapcsolódás hibáinak javítása és a DLNA lejátszási lista forrásként választható a WEB Radio és az SD módnál megszokott módon.
+- Kisebb hibajavítások és optimalizálások
+
 ## v0.2.2
 - Hálózatvesztés esetén az IP cím helyén megjelenik a "Scan WiFi..." üzenet, miközben új hálózatot keres.
 - Kapcsolódás után 5 másodperces váltással jelenik meg az IP cím és az SSID az IP mezőben.

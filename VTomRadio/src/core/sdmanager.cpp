@@ -35,6 +35,7 @@ bool SDManager::start(){
   Serial.printf("[SD] begin try1=%d\n", ready);
   vTaskDelay(10);
   if(!ready) {
+    digitalWrite(SDC_CS, HIGH);
     ready = begin(SDC_CS, SDREALSPI, SDSPISPEED);
     Serial.printf("[SD] begin try2=%d\n", ready);
   }

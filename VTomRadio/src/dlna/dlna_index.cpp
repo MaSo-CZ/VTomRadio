@@ -54,9 +54,15 @@ if (!controlUrl.length()) {
   // ====== HTTP szakasz: CSAK EZ lockolt ======
   {
     DlnaHttpGuard lock;
+    if (!lock.ok) {
+      Serial.println("[DLNA][BROWSE] HTTP mutex timeout");
+      return false;
+    }
 
     HTTPClient http;
     WiFiClient client;
+    http.setConnectTimeout(3000);
+    http.setTimeout(6000);
 
     String soap = buildBrowseEnvelope(objectId, start, count);
 
@@ -97,7 +103,11 @@ if (!controlUrl.length()) {
   int a = xml.indexOf("<Result>");
   int b = xml.indexOf("</Result>");
   if (a < 0 || b < 0 || b <= a) {
-    // valid response but no Result block
+    // Csonka válasz (pl. kevés memória / időtúllépés) nem lehet "üres lista"
+    if (xml.indexOf("BrowseResponse>") < 0 || xml.lastIndexOf("</u:BrowseResponse>") < 0 || returned > 0) {
+      Serial.printf("[DLNA][BROWSE] truncated response (%u bytes), free heap=%u\n", (unsigned)xml.length(), (unsigned)ESP.getFreeHeap());
+      return false;
+    }
     return true;
   }
 
@@ -241,7 +251,7 @@ bool DlnaIndex::listContainer(const String& controlUrl, const String& objectId, 
   uint32_t ret = 0, tot = 0;
 
   // Kisebb lapméret: alacsonyabb memória és hálózati terhelés a böngészésnél.
-  const uint32_t pageSize = 80;
+  const uint32_t pageSize = 40;
   if (!browsePage(controlUrl, objectId, start, pageSize, didl, ret, tot)) return false;
 
   std::vector<String> cids, ctitles;

@@ -59,9 +59,9 @@ void DspCore::sleep(void) {
 }
 
 void DspCore::wake(void) {
-    writeCommand(ST7796_DISPON);
-    delay(150);
     writeCommand(ST7796_SLPOUT);
+    delay(150);
+    writeCommand(ST7796_DISPON);
     delay(150);
 }
 

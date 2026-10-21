@@ -380,6 +380,105 @@ void Config::changeMode(int newmode) { // DLNA mod
 #endif
 }
 
+bool Config::selectInput(inputSource_e source) {
+    if (source == INPUT_BLUETOOTH) {
+        Serial.println("[INPUT] Bluetooth is not supported yet");
+        return false;
+    }
+
+    if (source == INPUT_SD) {
+#ifndef USE_SD
+        Serial.println("[INPUT] SD input is not enabled");
+        return false;
+#else
+        if (getMode() == PM_SDCARD) {
+#ifdef USE_DLNA
+            if (store.playlistSource != PL_SRC_WEB) {
+                store.playlistSource = PL_SRC_WEB;
+                saveValue(&store.playlistSource, static_cast<uint8_t>(PL_SRC_WEB));
+            }
+#endif
+            return true;
+        }
+        const bool resume = player.isRunning();
+        changeMode(PM_SDCARD);
+        if (getMode() != PM_SDCARD) { return false; }
+#ifdef USE_DLNA
+        if (store.playlistSource != PL_SRC_WEB) {
+            store.playlistSource = PL_SRC_WEB;
+            saveValue(&store.playlistSource, static_cast<uint8_t>(PL_SRC_WEB));
+        }
+#endif
+        netserver.requestOnChange(GETPLAYERMODE, 0);
+        if (resume && !player.sendCommand({PR_PLAY, store.lastSdStation})) {
+            Serial.println("[INPUT] Failed to queue SD playback");
+            return false;
+        }
+        return true;
+#endif
+    }
+
+    if (source != INPUT_WEB && source != INPUT_DLNA) {
+        Serial.printf("[INPUT] Invalid input source: %u\n", static_cast<unsigned>(source));
+        return false;
+    }
+
+#ifdef USE_DLNA
+    const bool modeChange = getMode() != PM_WEB;
+    const bool sourceChange = !modeChange && isDlnaMode() != (source == INPUT_DLNA);
+    if (!modeChange && !sourceChange) { return true; }
+    const bool resume = player.isRunning();
+#else
+    if (source == INPUT_DLNA) {
+        Serial.println("[INPUT] DLNA support is not enabled");
+        return false;
+    }
+    const bool modeChange = getMode() != PM_WEB;
+    const bool sourceChange = false;
+    if (!modeChange) { return true; }
+    const bool resume = player.isRunning();
+#endif
+
+    if (!modeChange && sourceChange && resume) {
+        if (!player.sendCommand({PR_STOP, 0})) {
+            Serial.println("[INPUT] Failed to stop playback for source change");
+            return false;
+        }
+        delay(50);
+    }
+
+#ifdef USE_DLNA
+    if (source == INPUT_DLNA) {
+        store.playlistSource = PL_SRC_DLNA;
+        saveValue(&store.playlistSource, static_cast<uint8_t>(PL_SRC_DLNA));
+    } else
+#endif
+    {
+#ifdef USE_DLNA
+        if (store.playlistSource != PL_SRC_WEB) {
+            store.playlistSource = PL_SRC_WEB;
+            saveValue(&store.playlistSource, static_cast<uint8_t>(PL_SRC_WEB));
+        }
+#endif
+    }
+
+    if (modeChange) {
+        changeMode(PM_WEB);
+        if (getMode() != PM_WEB) { return false; }
+    } else {
+        initPlaylistMode();
+        display.putRequest(NEWSTATION);
+        netserver.requestOnChange(GETINDEX, 0);
+    }
+
+    netserver.requestOnChange(GETPLAYERMODE, 0);
+    if (resume && !player.sendCommand({PR_PLAY, lastStation()})) {
+        Serial.println("[INPUT] Failed to queue playback after source change");
+        return false;
+    }
+    return true;
+}
+
 void Config::initSDPlaylist() {
 #ifdef USE_SD
     // bool doIndex = !sdman.exists(INDEX_SD_PATH); // "módosítás"
@@ -464,6 +563,8 @@ void Config::setSDpos(uint32_t val) {
         } else {
             player.setAudioFilePosition(val - player.sd_min); // futó lejátszásnál seek webről
         }
+    } else if (isDlnaMode() && player.isRunning() && val >= player.sd_min) {
+        player.setAudioFilePosition(val - player.sd_min); // DLNA fájl: HTTP Range alapú seek
     }
 }
 
@@ -1702,6 +1803,7 @@ bool Config::loadStation(uint16_t ls) {
         memset(station.name, 0, BUFLEN);
         strncpy(station.name, tmpBuf, BUFLEN);
         strncpy(station.url, tmpBuf2, BUFLEN);
+        Serial.printf("##PL.LOAD#: #%u pos=%lu name='%s'\n", (unsigned)ls, (unsigned long)pos, station.name);
         station.ovol = sOvol;
         setLastStation(ls);
     }

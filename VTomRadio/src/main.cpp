@@ -161,15 +161,9 @@ void setup() {
     // Ez azért fontos, mert az SD kártya és a TFT kijelző ugyanazt az SPI buszt használja, és ha az SD kártya aktív marad, akkor zavarhatja a TFT működését.
     pinMode(SDC_CS, OUTPUT);
     digitalWrite(SDC_CS, HIGH);
-    // Ha be van dugva a kártya, az SD.begin() és SD.end() felkészíti az SPI buszra
-    if (SD.begin(SDC_CS, SPI, SDSPISPEED)) {
-        SD.end(); // Ezzel az SD kartya MISO/SPI busza kikapcsol
-        Serial.println("[SETUP] SD card initialized and deactivated.");
-    } else {
-        Serial.println("[SETUP] No SD card or failed to initialize.");
-    }
-    // Again, we ensure that CS is HIGH to prevent the SD card from interfering with the TFT display.
-    digitalWrite(SDC_CS, HIGH);
+    // Az SD kártyát itt nem inicializáljuk: az SD.begin(..., SPI, ...) a másik (FSPI) perifériára
+    // foglalná le a 11/12/13 lábakat, amit a kijelző és az SDSPI (HSPI) is használ.
+    // Az SD init az sdman.start()-ban történik az SDSPI-n, a TFT-vel közös zár (spi_t mutex) alatt.
 #endif
 
     pm.init();     // pluginsManager
